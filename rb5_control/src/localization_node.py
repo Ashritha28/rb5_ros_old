@@ -19,7 +19,12 @@ pose_ma = {4: np.asarray([[1, 0, 0, 0],[0, 1, 0, 0], [0,0,1, 1.7], [0,0,0,1]]),
 rTc = np.asarray([[-1, 0, 0, 0], [0, -1, 0, 0], [0,0,1, -0.10], [0,0,0,1]])
 
 def tag_callback(msg):
-        print("ID:",msg.id,"\n Pose:",msg.pose)
+
+    for detection in msg.detections:
+        print("Type:",type(detection))
+        print("ID:", detection.id)
+        print("Pose:", detection.pose)
+        # print("ID:",msg.id,"\n Pose:",msg.pose)
         # for id, pose in zip(msg.id, msg.pose) :
             # print("april_tag detetcion:", detection)
 
@@ -49,7 +54,7 @@ def tag_callback(msg):
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
-    # rospy.Subscriber("/apriltag_detection_array", AprilTagDetectionArray, tag_callback)
+    rospy.Subscriber("/apriltag_detection_array", AprilTagDetectionArray, tag_callback)
     # rospy.
-    rospy.Subscriber("/april_poses",AprilTagDetection, tag_callback )
+    # rospy.Subscriber("/april_poses",AprilTagDetection, tag_callback )
     rospy.spin()
