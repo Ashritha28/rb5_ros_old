@@ -36,9 +36,9 @@ class MegaPiController:
                   " vfr: " + repr(int(round(vfr,0))) +
                   " vbl: " + repr(int(round(vbl,0))) +
                   " vbr: " + repr(int(round(vbr,0))))
-        self.bot.motorRun(self.mfl,vfl)
+        self.bot.motorRun(self.mfl,-vfl)
         self.bot.motorRun(self.mfr,vfr)
-        self.bot.motorRun(self.mbl,vbl)
+        self.bot.motorRun(self.mbl,-vbl)
         self.bot.motorRun(self.mbr,vbr)
 
 
@@ -85,11 +85,12 @@ if __name__ == "__main__":
     import time
     mpi_ctrl = MegaPiController(port='/dev/ttyUSB0', verbose=True)
     time.sleep(1)
-    mpi_ctrl.carStraight(30)
-    time.sleep(1)
-    mpi_ctrl.carSlide(30)
-    time.sleep(1)
-    mpi_ctrl.carRotate(30)
-    time.sleep(1)
+    # mpi_ctrl.carStraight(30)
+    mpi_ctrl.setFourMotors(0,0,30,0)
+    time.sleep(4)
+    # mpi_ctrl.carSlide(30)
+    # time.sleep(1)
+    # mpi_ctrl.carRotate(30)
+    # time.sleep(1)
     mpi_ctrl.carStop()
     # print("If your program cannot be closed properly, check updated instructions in google doc.")
