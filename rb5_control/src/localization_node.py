@@ -8,7 +8,7 @@ from april_detection.msg import AprilTagDetectionArray, AprilTagDetection
 import numpy as np
 import time
 
-pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
+#pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
 # Location of the marker AprilTag
 pose_ma = {4: np.asarray([[1, 0, 0, 0],[0, 1, 0, 0], [0,0,1, 1.7], [0,0,0,1]]),
@@ -21,8 +21,8 @@ rTc = np.asarray([[-1, 0, 0, 0], [0, -1, 0, 0], [0,0,1, -0.10], [0,0,0,1]])
 def tag_callback(msg):
     if len(msg.detections):
         new = {}
-        for apriltag_id, pose in zip(msg.ids, msg.detections):
-            print("april_tag id:", apriltag_id, "\n Pose:", pose)
+        for detection in msg.detections:
+            print("april_tag detetcion:", detection)
 
     # pose_msg = Pose()
     # pose_msg.header.stamp = msg.header.stamp
