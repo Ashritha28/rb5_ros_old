@@ -19,7 +19,7 @@ pose_ma = {4: np.asarray([[1, 0, 0, 0],[0, 1, 0, 0], [0,0,1, 1.7], [0,0,0,1]]),
 rTc = np.asarray([[-1, 0, 0, 0], [0, -1, 0, 0], [0,0,1, -0.10], [0,0,0,1]])
 
 def tag_callback(msg):
-        print("ID:",msg.id,"\n Pose:" msg.pose)
+        print("ID:",msg.id,"\n Pose:",msg.pose)
         # for id, pose in zip(msg.id, msg.pose) :
             # print("april_tag detetcion:", detection)
 
