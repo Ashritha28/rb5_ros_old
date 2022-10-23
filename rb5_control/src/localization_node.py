@@ -33,8 +33,8 @@ def tag_callback(msg):
         # r = np.array(Rotation.from_quat(tag_orientation))
         # print("Rotation matrix using scipy:", r)
         r = tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
-        tag_orientation.z, tag_orientation.w])
-        print("Rotation Matrix using tf: \n", r[:3,:3])
+        tag_orientation.z, tag_orientation.w])[:3,:3]
+        print("Rotation Matrix using tf: \n", r)
         cTa = (np.concatenate((np.concatenate((r, position), axis=1),np.array([0,0,0,1])),axis=0))
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
