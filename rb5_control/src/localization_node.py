@@ -13,7 +13,7 @@ import tf
 #pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
 # Location of the marker AprilTag
-pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
+pose_ma = {8: np.asarray([[1, 0, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
 
 # Camera in robot frame
 rTc = np.asarray([[0, -1, 0, 0.05], [0, 0, -1, 0.015], [0,0,1, 0.15], [0,0,0,1]])
@@ -42,10 +42,13 @@ def tag_callback(msg):
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
         # AprilTag in robot coordinates
-        rTa = np.matmul(aTc, rTc)
+        # rTa = np.matmul(aTc, rTc)
+        rTa = np.matmul(rTc, cTa)
         print("AprilTag in robot coordinates rTa: \n",rTa)
         # Robot in world coordinates
-        wTr = np.matmul(pose_ma[apriltag_id], rTa)
+        aTr = np.linalg.inv(rTa)
+        #wTr = np.matmul(pose_ma[apriltag_id], rTa)
+        wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
         # pose_msg.pose.matrix = list(wTr[:3, :].flatten())
