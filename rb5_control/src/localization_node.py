@@ -8,7 +8,7 @@ from april_detection.msg import AprilTagDetectionArray, AprilTagDetection
 import numpy as np
 import time
 import tf
-from scipy.spatial.transform import Rotation
+#from scipy.spatial.transform import Rotation
 
 #pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
@@ -30,10 +30,11 @@ def tag_callback(msg):
         tag_orientation = detection.pose.orientation 
         print("Tag oreintation quaternion:", tag_orientation)
         
-        r = np.array(Rotation.from_quat(tag_orientation))
-        print("Rotation matrix using scipy:", r)
-        print("Rotation Matrix using tf: \n", tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
-        tag_orientation.z, tag_orientation.w]))
+        # r = np.array(Rotation.from_quat(tag_orientation))
+        # print("Rotation matrix using scipy:", r)
+        r = tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
+        tag_orientation.z, tag_orientation.w])
+        print("Rotation Matrix using tf: \n", r)
         cTa = (np.concatenate((np.concantenate((r, position), axis=1),np.array([0,0,0,1])),axis=0))
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
