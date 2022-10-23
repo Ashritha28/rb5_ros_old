@@ -25,7 +25,7 @@ def tag_callback(msg):
         #print("Type:",type(detection))
         print("ID:", detection.id)
         print("Pose:", detection.pose)
-        tag_orientation = detection.orientation 
+        tag_orientation = detection.pose.orientation 
         print("X quaternion:", tag_orientation.x)
         print("Rotation Matrix:", tf.transformations.quaternion_matrix(tag_orientation.x, tag_orientation.y, 
         tag_orientation.z, tag_orientation.w))
