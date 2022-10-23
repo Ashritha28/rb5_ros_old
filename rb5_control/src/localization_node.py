@@ -42,11 +42,13 @@ def tag_callback(msg):
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
         # AprilTag in robot coordinates
-        rTa = np.matmul(aTc, rTc)
-        # rTa = np.matmul(rTc, cTa)
-        print("AprilTag in robot coordinates rTa: \n",rTa)
+        # rTa = np.matmul(aTc, rTc) -- v
+        # rTa = np.matmul(rTc, cTa) -- first attempt
+        aTr = np.matmul(aTc, rTc) 
+        # print("AprilTag in robot coordinates rTa: \n",rTa) --v
+        print("AprilTag in robot coordinates rTa: \n",aTr)
         # Robot in world coordinates
-        # aTr = np.linalg.inv(rTa)
+        rTa = np.linalg.inv(aTr)
         wTr = np.matmul(pose_ma[apriltag_id], rTa)
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
