@@ -7,6 +7,7 @@ from april_detection.msg import AprilTagDetectionArray, AprilTagDetection
 # from navigation_dev.msg import Pose 
 import numpy as np
 import time
+import tf
 
 #pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
@@ -21,9 +22,14 @@ rTc = np.asarray([[-1, 0, 0, 0], [0, -1, 0, 0], [0,0,1, -0.10], [0,0,0,1]])
 def tag_callback(msg):
 
     for detection in msg.detections:
-        print("Type:",type(detection))
+        #print("Type:",type(detection))
         print("ID:", detection.id)
         print("Pose:", detection.pose)
+        tag_pose = detection.pose
+        print("X quaternion:", tag_pose.pose.x)
+        print("Rotation Matrix:", tf.transformations.quaternion_matrix(tag_pose.pose.x, tag_pose.pose.y, 
+        tag_pose.pose.z, tag_pose.pose.w))
+
         # print("ID:",msg.id,"\n Pose:",msg.pose)
         # for id, pose in zip(msg.id, msg.pose) :
             # print("april_tag detetcion:", detection)
