@@ -38,8 +38,7 @@ def tag_callback(msg):
         print("Rotation Matrix using tf: \n", r)
         print("Size of rotation matrix:", r.shape)
         print("Size of position matrix:",position.shape)
-
-        cTa = np.append(np.append(r, position.T,axis=1), [[0,0,0,1]], axis=0)
+        cTa = np.append(np.append(r, position,axis=1), [[0,0,0,1]], axis=0)
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
         # AprilTag in robot coordinates
