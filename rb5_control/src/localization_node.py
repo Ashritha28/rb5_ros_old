@@ -35,7 +35,7 @@ def tag_callback(msg):
         r = tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
         tag_orientation.z, tag_orientation.w])[:3,:3]
         print("Rotation Matrix using tf: \n", r)
-        cTa = (np.row_stack((np.column_stack((r, position)), np.array([0,0,0,1]))))
+        cTa = np.append(np.append(r, position,axis=1), [[0,0,0,1]], axis=0)
         print("cTa: \n",cTa)
         aTc = np.linalg.inv(cTa)
         # AprilTag in robot coordinates
