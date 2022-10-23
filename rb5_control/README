@@ -1,4 +1,4 @@
-The solution are only two files (src/hw1_solution.py and src/mpi_twist_control_node.py).
+The solution are only the two files (src/hw1_solution.py and src/mpi_twist_control_node.py). 
 
 mpi_twist_control_node.py
 	receive a desired twist and calculate the desired angular velocity for each wheel.
