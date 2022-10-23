@@ -53,12 +53,6 @@ def tag_callback(msg):
         # new[apriltag_id] = wTr
         # pose_msg.pose.matrix = list(wTr[:3, :].flatten())
 
-    
-        # print("ID:",msg.id,"\n Pose:",msg.pose)
-        # for id, pose in zip(msg.id, msg.pose) :
-            # print("april_tag detetcion:", detection)
-
-
 if __name__ == "__main__":
     rospy.init_node('localization_node')
     rospy.Subscriber("/apriltag_detection_array", AprilTagDetectionArray, tag_callback)
