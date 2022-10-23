@@ -24,7 +24,7 @@ def tag_callback(msg):
 
         #print("Type:",type(detection))
         apriltag_id = detection.id
-        position = np.array(detection.pose.position).astype('float64')
+        position = np.array(list(detection.pose.position), dtype=float)
         print("ID:", apriltag_id)
         print("Position:", position)
         tag_orientation = detection.pose.orientation 
