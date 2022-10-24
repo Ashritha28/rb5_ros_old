@@ -141,7 +141,7 @@ class PIDcontroller:
                 time.sleep(0.05)
 
                 if msg.pose:
-                    cur_pose_matrix = np.asarray(msg.pose.data)
+                    cur_pose_matrix = np.asarray(msg.data)
                     print(cur_pose_matrix)
                     trans = cur_pose_matrix[:3, 3]
                     print("Translation:", trans)
