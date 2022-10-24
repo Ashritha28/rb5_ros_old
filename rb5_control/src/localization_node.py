@@ -62,7 +62,7 @@ def tag_callback(msg):
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
-        pose_msg.publish(wTr)
+        pose_pub.publish(wTr)
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
