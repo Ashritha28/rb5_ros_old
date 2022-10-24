@@ -3,14 +3,14 @@
 import rospy
 import cv2
 import apriltag
-from april_detection.msg import AprilTagDetectionArray, AprilTagDetection
+from april_detection.msg import AprilTagDetectionArray, Pose
 # from navigation_dev.msg import Pose 
 import numpy as np
 import time
 import tf
 #from scipy.spatial.transform import Rotation
 
-#pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
+pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
 # Location of the marker AprilTag
 pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
@@ -61,7 +61,7 @@ def tag_callback(msg):
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
-        # pose_msg.pose.matrix = list(wTr[:3, :].flatten())
+        pose_msg.publish(wTr)
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
