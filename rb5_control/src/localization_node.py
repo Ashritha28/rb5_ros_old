@@ -3,8 +3,8 @@
 import rospy
 import cv2
 import apriltag
-from april_detection.msg import AprilTagDetectionArray, Pose
-# from april_detection.msg import Pose
+from april_detection.msg import apriltag_detection_array
+from april_detection.msg import Pose
 # from std_msgs.msg import Float64MultiArray
 import numpy as np
 import time
@@ -71,7 +71,7 @@ def tag_callback(msg):
         # new[apriltag_id] = wTr
         pose_msg.pose = list(wTr.flatten())
         pose_pub.publish(pose_msg)
-        pose_pub.publish(wTr)
+        # pose_pub.publish(wTr)
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
