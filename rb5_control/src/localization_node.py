@@ -70,7 +70,7 @@ def tag_callback(msg):
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
-        pose_msg.pose.matrix = list(wTr.flatten())
+        pose_msg.pose = list(wTr.flatten())
         pose_pub.publish(pose_msg)
         pose_pub.publish(wTr)
 
