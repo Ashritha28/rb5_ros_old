@@ -9,6 +9,7 @@ from std_msgs.msg import Float64MultiArray
 """
 The class of the pid controller.
 """
+pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
 
 def isRotationMatrix(R) :
     Rt = np.transpose(R)
@@ -122,6 +123,8 @@ def coord(twist, current_state):
     return np.dot(J, twist)
     
 def pose_callback(msg):
+
+    print("Here")
     # waypoint = np.array([[0.0,0.0,0.0], 
     #             [1.0,0.0,0.0],
     #             [1.0,1.0,np.pi],
@@ -182,7 +185,6 @@ current_state = np.array([0.0,0.0,0.0])
 if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
-    pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
     rospy.Subscriber('/current_pose', Pose, pose_callback) 
 
     
