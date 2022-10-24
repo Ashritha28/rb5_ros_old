@@ -108,59 +108,59 @@ class PIDcontroller:
 
     def pose_callback(msg):
 
-    print("Here")
-    # waypoint = np.array([[0.0,0.0,0.0], 
-    #             [1.0,0.0,0.0],
-    #             [1.0,1.0,np.pi],
-    #             [0.0,0.0,0.0]]) 
-    
-    # init pid controller
-    #pid = PIDcontroller(0.02,0.005,0.005)
+        print("Here")
+        # waypoint = np.array([[0.0,0.0,0.0], 
+        #             [1.0,0.0,0.0],
+        #             [1.0,1.0,np.pi],
+        #             [0.0,0.0,0.0]]) 
+        
+        # init pid controller
+        #pid = PIDcontroller(0.02,0.005,0.005)
 
-    # init current state
-    
+        # init current state
+        
 
-    # in this loop we will go through each way point.
-    # once error between the current state and the current way point is small enough, 
-    # the current way point will be updated with a new point.
-    for wp in self.waypoints:
-        print("move to way point", wp)
-        # set wp as the target point
-        self.setTarget(wp)
+        # in this loop we will go through each way point.
+        # once error between the current state and the current way point is small enough, 
+        # the current way point will be updated with a new point.
+        for wp in self.waypoints:
+            print("move to way point", wp)
+            # set wp as the target point
+            self.setTarget(wp)
 
-        # calculate the current twist
-        update_value = self.update(self.current_state)
-        # publish the twist
-        self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
-        #print(coord(update_value, current_state))
-        time.sleep(0.05)
-        # update the current state
-        self.current_state += update_value
-        while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.05): # check the error between current state and current way point
             # calculate the current twist
             update_value = self.update(self.current_state)
             # publish the twist
             self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
             #print(coord(update_value, current_state))
             time.sleep(0.05)
+            # update the current state
+            self.current_state += update_value
+            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.05): # check the error between current state and current way point
+                # calculate the current twist
+                update_value = self.update(self.current_state)
+                # publish the twist
+                self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
+                #print(coord(update_value, current_state))
+                time.sleep(0.05)
 
-            if msg.pose:
-                cur_pose_arr = np.asarray(msg.pose)
-                print(cur_pose_arr)
-                cur_pose_matrix = cur_pose_arr.reshape(4,4)
-                trans = cur_pose_matrix[:3, 3]
-                print("Translation:", trans)
-                rot = cur_pose_matrix[:3, :3]
-                print("Rotation part of pose:", rot)
-                rot_y = rotationMatrixToEulerAngles(rot)[1]
-                # update current state based on visual feedback
-                self.current_state = np.asarray([trans[0], trans[1], rot_y])
-            else:
-                # update the current state similar to open loop
-                self.current_state += update_value
-                # update_value = pid.update(cur_pose)
-    # stop the car and exit
-    self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
+                if msg.pose:
+                    cur_pose_arr = np.asarray(msg.pose)
+                    print(cur_pose_arr)
+                    cur_pose_matrix = cur_pose_arr.reshape(4,4)
+                    trans = cur_pose_matrix[:3, 3]
+                    print("Translation:", trans)
+                    rot = cur_pose_matrix[:3, :3]
+                    print("Rotation part of pose:", rot)
+                    rot_y = rotationMatrixToEulerAngles(rot)[1]
+                    # update current state based on visual feedback
+                    self.current_state = np.asarray([trans[0], trans[1], rot_y])
+                else:
+                    # update the current state similar to open loop
+                    self.current_state += update_value
+                    # update_value = pid.update(cur_pose)
+        # stop the car and exit
+        self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
 def genTwistMsg(desired_twist):
     """
