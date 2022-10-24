@@ -59,6 +59,7 @@ add_message_files(
   FILES
   AprilTagDetection.msg
   AprilTagDetectionArray.msg
+  Pose.msg
 )
 
 ## Generate services in the 'srv' folder
