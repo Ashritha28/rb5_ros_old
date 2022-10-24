@@ -4,20 +4,22 @@ import rospy
 import cv2
 import apriltag
 from april_detection.msg import AprilTagDetectionArray
-from std_msgs.msg import Float64MultiArray
+# from std_msgs.msg import Float64MultiArray
 # from navigation_dev.msg import Pose 
 import numpy as np
 import time
 import tf
 #from scipy.spatial.transform import Rotation
 
-pose_pub = rospy.Publisher('/current_pose', Float64MultiArray, queue_size=1)
+# pose_pub = rospy.Publisher('/current_pose', Float64MultiArray, queue_size=1)
 
 # Location of the marker AprilTag
-pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
+#pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
+pose_ma = {8: np.asarray([[0, 0, 1, 2.05],[-1, 0, 0, 0.015], [0, -1, 0, 0.15], [0,0,0,1]])}
 
 # Camera in robot frame
-rTc = np.asarray([[0, -1, 0, 0.05], [0, 0, -1, 0.015], [1,0,0, 0.15], [0,0,0,1]])
+#rTc = np.asarray([[0, -1, 0, 0.05], [0, 0, -1, 0.015], [1,0,0, 0.15], [0,0,0,1]])
+rTc = np.asarray([[0, 0, 1, 0.05], [-1, 0, 0, 0.015], [0,-1,0, 0.15], [0,0,0,1]])
 
 def tag_callback(msg):
 
@@ -41,10 +43,15 @@ def tag_callback(msg):
         print("Size of position matrix:",position.shape)
         cTa = np.append(np.append(r, position,axis=1), [[0,0,0,1]], axis=0)
         print("cTa: \n",cTa)
-        aTc = np.linalg.inv(cTa)
-        cTr = np.linalg.inv(rTc)
-        rTa = np.matmul(cTr, cTa)
+        rTa = np.matmul(rTc, cTa)
         print("AprilTag in robot coordinates rTa: \n",rTa)
+        aTr = np.linalg.inv(rTa)
+        wTa = pose_ma[apriltag_id]
+        wTr = np.matmul(wTa,aTr)
+        # aTc = np.linalg.inv(cTa)
+        # cTr = np.linalg.inv(rTc)
+        # rTa = np.matmul(cTr, cTa)
+        # print("AprilTag in robot coordinates rTa: \n",rTa)
         # AprilTag in robot coordinates
         # rTa = np.matmul(aTc, rTc) -- v
         # rTa = np.matmul(rTc, cTa) -- first attempt
@@ -55,14 +62,13 @@ def tag_callback(msg):
         # print("AprilTag in robot coordinates rTa: \n",aTr)
         # Robot in world coordinates
         # rTa = np.linalg.inv(aTr)
-        wTa = pose_ma[apriltag_id]
-        aTw = np.linalg.inv(wTa)
-        aTr = np.linalg.inv(rTa)
-        wTr = np.matmul(aTw,aTr)
+        # wTa = pose_ma[apriltag_id]
+        # aTw = np.linalg.inv(wTa)
+        # aTr = np.linalg.inv(rTa)
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
-        pose_pub.publish(wTr)
+        # pose_pub.publish(wTr)
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
