@@ -9,9 +9,6 @@ from std_msgs.msg import Float64MultiArray
 """
 The class of the pid controller.
 """
-waypoints = [[1.0,0.0,0.0]]
-pid = PIDcontroller(0.01,0.005,0.005)
-current_state = np.array([0.0,0.0,0.0])
 
 def isRotationMatrix(R) :
     Rt = np.transpose(R)
@@ -178,6 +175,9 @@ def pose_callback(msg):
     # stop the car and exit
     pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
+waypoints = [[1.0,0.0,0.0]]
+pid = PIDcontroller(0.01,0.005,0.005)
+current_state = np.array([0.0,0.0,0.0])
 
 if __name__ == "__main__":
     import time
