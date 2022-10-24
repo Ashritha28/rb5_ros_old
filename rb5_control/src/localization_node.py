@@ -3,14 +3,15 @@
 import rospy
 import cv2
 import apriltag
-from april_detection.msg import AprilTagDetectionArray, Pose
+from april_detection.msg import AprilTagDetectionArray
+from std_msgs.msg import Float64MultiArray
 # from navigation_dev.msg import Pose 
 import numpy as np
 import time
 import tf
 #from scipy.spatial.transform import Rotation
 
-pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
+pose_pub = rospy.Publisher('/current_pose', Float64MultiArray, queue_size=1)
 
 # Location of the marker AprilTag
 pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}

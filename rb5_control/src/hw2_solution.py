@@ -4,6 +4,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from april_detection.msg import Pose
 import numpy as np
+from std_msgs.msg import Float64MultiArray
 
 """
 The class of the pid controller.
@@ -140,7 +141,8 @@ class PIDcontroller:
                 time.sleep(0.05)
 
                 if msg.pose:
-                    cur_pose_matrix = np.asarray(msg.pose.matrix)
+                    cur_pose_matrix = np.asarray(msg.pose.data)
+                    print(cur_pose_matrix)
                     trans = cur_pose_matrix[:3, 3]
                     print("Translation:", trans)
                     rot = cur_pose_matrix[:3, :3]
@@ -183,6 +185,6 @@ if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
-    rospy.Subscriber('/current_pose', Pose, planner) 
+    rospy.Subscriber('/current_pose', Float64MultiArray, planner) 
     
 
