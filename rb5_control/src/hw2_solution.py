@@ -9,6 +9,9 @@ from std_msgs.msg import Float64MultiArray
 """
 The class of the pid controller.
 """
+waypoints = [[1.0,0.0,0.0]]
+pid = PIDcontroller(0.01,0.005,0.005)
+current_state = np.array([0.0,0.0,0.0])
 
 def isRotationMatrix(R) :
     Rt = np.transpose(R)
@@ -101,66 +104,6 @@ class PIDcontroller:
             self.I = 0.0
 
         return result
-    
-
-    def planner(msg):
-
-        # waypoint = np.array([[0.0,0.0,0.0], 
-        #             [1.0,0.0,0.0],
-        #             [1.0,1.0,np.pi],
-        #             [0.0,0.0,0.0]]) 
-        waypoint = [[0.5,0.0,0.0]]
-        # init pid controller
-        #pid = PIDcontroller(0.02,0.005,0.005)
-        pid = PIDcontroller(0.01,0.005,0.005)
-
-        # init current state
-        current_state = np.array([0.0,0.0,0.0])
-
-        # in this loop we will go through each way point.
-        # once error between the current state and the current way point is small enough, 
-        # the current way point will be updated with a new point.
-        for wp in waypoint:
-            print("move to way point", wp)
-            # set wp as the target point
-            pid.setTarget(wp)
-
-            # calculate the current twist
-            update_value = pid.update(current_state)
-            # publish the twist
-            pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
-            #print(coord(update_value, current_state))
-            time.sleep(0.05)
-            # update the current state
-            current_state += update_value
-            while(np.linalg.norm(pid.getError(current_state, wp)) > 0.05): # check the error between current state and current way point
-                # calculate the current twist
-                update_value = pid.update(current_state)
-                # publish the twist
-                pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
-                #print(coord(update_value, current_state))
-                time.sleep(0.05)
-
-
-                if msg.pose:
-                    cur_pose_arr = np.asarray(msg.pose)
-                    print(cur_pose_arr)
-                    cur_pose_matrix = cur_pose_arr.reshape(4,4)
-                    trans = cur_pose_matrix[:3, 3]
-                    print("Translation:", trans)
-                    rot = cur_pose_matrix[:3, :3]
-                    print("Rotation part of pose:", rot)
-                    rot_y = rotationMatrixToEulerAngles(rot)[1]
-                    # update current state based on visual feedback
-                    current_state = np.asarray([trans[0], trans[1], rot_y])
-                else:
-                    # update the current state similar to open loop
-                    current_state += update_value
-                    # update_value = pid.update(cur_pose)
-        # stop the car and exit
-        pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
-
-
 
 def genTwistMsg(desired_twist):
     """
@@ -181,12 +124,66 @@ def coord(twist, current_state):
                   [0.0,0.0,1.0]])
     return np.dot(J, twist)
     
+def pose_callback(msg):
+    # waypoint = np.array([[0.0,0.0,0.0], 
+    #             [1.0,0.0,0.0],
+    #             [1.0,1.0,np.pi],
+    #             [0.0,0.0,0.0]]) 
+    
+    # init pid controller
+    #pid = PIDcontroller(0.02,0.005,0.005)
+
+    # init current state
+    
+
+    # in this loop we will go through each way point.
+    # once error between the current state and the current way point is small enough, 
+    # the current way point will be updated with a new point.
+    for wp in waypoints:
+        print("move to way point", wp)
+        # set wp as the target point
+        pid.setTarget(wp)
+
+        # calculate the current twist
+        update_value = pid.update(current_state)
+        # publish the twist
+        pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
+        #print(coord(update_value, current_state))
+        time.sleep(0.05)
+        # update the current state
+        current_state += update_value
+        while(np.linalg.norm(pid.getError(current_state, wp)) > 0.05): # check the error between current state and current way point
+            # calculate the current twist
+            update_value = pid.update(current_state)
+            # publish the twist
+            pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
+            #print(coord(update_value, current_state))
+            time.sleep(0.05)
+
+            if msg.pose:
+                cur_pose_arr = np.asarray(msg.pose)
+                print(cur_pose_arr)
+                cur_pose_matrix = cur_pose_arr.reshape(4,4)
+                trans = cur_pose_matrix[:3, 3]
+                print("Translation:", trans)
+                rot = cur_pose_matrix[:3, :3]
+                print("Rotation part of pose:", rot)
+                rot_y = rotationMatrixToEulerAngles(rot)[1]
+                # update current state based on visual feedback
+                current_state = np.asarray([trans[0], trans[1], rot_y])
+            else:
+                # update the current state similar to open loop
+                current_state += update_value
+                # update_value = pid.update(cur_pose)
+    # stop the car and exit
+    pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
 
 if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
-    rospy.Subscriber('/current_pose', Pose, planner) 
+    rospy.Subscriber('/current_pose', Pose, pose_callback) 
+
     
 
