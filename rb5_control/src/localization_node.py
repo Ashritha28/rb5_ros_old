@@ -3,7 +3,7 @@
 import rospy
 import cv2
 import apriltag
-from april_detection.msg import apriltag_detection_array
+from april_detection.msg import AprilTagDetectionArray
 from april_detection.msg import Pose
 # from std_msgs.msg import Float64MultiArray
 import numpy as np
