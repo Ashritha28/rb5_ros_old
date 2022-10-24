@@ -4,14 +4,14 @@ import rospy
 import cv2
 import apriltag
 from april_detection.msg import AprilTagDetectionArray
+from april_detection.msg import Pose
 # from std_msgs.msg import Float64MultiArray
-# from navigation_dev.msg import Pose 
 import numpy as np
 import time
 import tf
-#from scipy.spatial.transform import Rotation
 
 # pose_pub = rospy.Publisher('/current_pose', Float64MultiArray, queue_size=1)
+pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
 # Location of the marker AprilTag
 #pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
@@ -22,7 +22,8 @@ pose_ma = {8: np.asarray([[0, 0, 1, 2.05],[-1, 0, 0, 0.015], [0, -1, 0, 0.15], [
 rTc = np.asarray([[0, 0, 1, 0.05], [-1, 0, 0, 0.015], [0,-1,0, 0.15], [0,0,0,1]])
 
 def tag_callback(msg):
-
+    pose_msg = Pose()
+    pose_msg.header.stamp = msg.header.stamp
     for detection in msg.detections:
 
         #print("Type:",type(detection))
@@ -68,7 +69,9 @@ def tag_callback(msg):
         # wTr = np.matmul(pose_ma[apriltag_id], aTr)
         print("Robot in world coordinates wTr: \n",wTr)
         # new[apriltag_id] = wTr
-        # pose_pub.publish(wTr)
+        pose_msg.pose.matrix = list(wTr.flatten())
+        pose_pub.publish(pose_msg)
+        pose_pub.publish(wTr)
 
 if __name__ == "__main__":
     rospy.init_node('localization_node')
