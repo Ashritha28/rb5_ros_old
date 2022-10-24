@@ -105,13 +105,14 @@ class PIDcontroller:
 
     def planner(msg):
 
-        waypoint = np.array([[0.0,0.0,0.0], 
-                    [1.0,0.0,0.0],
-                    [1.0,1.0,np.pi],
-                    [0.0,0.0,0.0]]) 
-
+        # waypoint = np.array([[0.0,0.0,0.0], 
+        #             [1.0,0.0,0.0],
+        #             [1.0,1.0,np.pi],
+        #             [0.0,0.0,0.0]]) 
+        waypoint = [[0.5,0.0,0.0]]
         # init pid controller
-        pid = PIDcontroller(0.02,0.005,0.005)
+        #pid = PIDcontroller(0.02,0.005,0.005)
+        pid = PIDcontroller(0.01,0.005,0.005)
 
         # init current state
         current_state = np.array([0.0,0.0,0.0])
@@ -140,21 +141,22 @@ class PIDcontroller:
                 #print(coord(update_value, current_state))
                 time.sleep(0.05)
 
+
                 if msg.pose:
-                    cur_pose_matrix = np.asarray(msg.data)
-                    print(cur_pose_matrix)
+                    cur_pose_arr = np.asarray(msg.pose)
+                    print(cur_pose_arr)
+                    cur_pose_matrix = cur_pose_arr.reshape(4,4)
                     trans = cur_pose_matrix[:3, 3]
                     print("Translation:", trans)
                     rot = cur_pose_matrix[:3, :3]
                     print("Rotation part of pose:", rot)
                     rot_y = rotationMatrixToEulerAngles(rot)[1]
-
-                    cur_pose = [trans[0], trans[1], rot_y]
-
-                    update_value = pid.update(cur_pose)
-
-                # update the current state
-                current_state += update_value
+                    # update current state based on visual feedback
+                    current_state = np.asarray([trans[0], trans[1], rot_y])
+                else:
+                    # update the current state similar to open loop
+                    current_state += update_value
+                    # update_value = pid.update(cur_pose)
         # stop the car and exit
         pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
@@ -185,6 +187,6 @@ if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
-    rospy.Subscriber('/current_pose', Float64MultiArray, planner) 
+    rospy.Subscriber('/current_pose', Pose, planner) 
     
 
