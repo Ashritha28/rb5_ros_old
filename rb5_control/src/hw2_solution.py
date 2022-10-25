@@ -200,7 +200,7 @@ if __name__ == "__main__":
     rospy.init_node("hw2")
     # waypoints = [[1.0,0.0,0.0],[1.0,2.0,math.pi],[0,0,0]]
     waypoints = [[1.0,0.0,0.0], [1.0,2.0,math.pi]]
-    pid = PIDcontroller(0.05,0.005,0.005, waypoints)
+    pid = PIDcontroller(0.05,0.005,0.05, waypoints)
     time.sleep(1.0)
     pid.planner()
     rospy.spin()
