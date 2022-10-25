@@ -15,7 +15,8 @@ pose_pub = rospy.Publisher('/current_pose', Pose, queue_size=1)
 
 # Location of the marker AprilTag
 #pose_ma = {8: np.asarray([[0, -1, 0, 2.05],[0, 0, -1, 0.015], [1, 0, 0, 0.15], [0,0,0,1]])}
-pose_ma = {8: np.asarray([[0, 0, 1, 2.05],[-1, 0, 0, 0.015], [0, -1, 0, 0.15], [0,0,0,1]])}
+pose_ma = {8: np.asarray([[0, 0, 1, 2.05],[-1, 0, 0, 0.015], [0, -1, 0, 0.15], [0,0,0,1]]),
+9: np.asarray([[0, 0, 1, 2.05],[-1, 0, 0, 0.015], [0, -1, 0, 0.15], [0,0,0,1]])}
 
 # Camera in robot frame
 #rTc = np.asarray([[0, -1, 0, 0.05], [0, 0, -1, 0.015], [1,0,0, 0.15], [0,0,0,1]])
