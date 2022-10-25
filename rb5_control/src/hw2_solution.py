@@ -163,7 +163,6 @@ class PIDcontroller:
                     print("True")
                     self.current_state = self.message_state
                     self.flag = False
-                    break
                 else:
                     print("False")
                     # update the current state similar to open loop
