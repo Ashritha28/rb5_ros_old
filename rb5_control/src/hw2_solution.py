@@ -150,6 +150,7 @@ class PIDcontroller:
             time.sleep(0.05)
             # update the current state
             self.current_state += update_value
+            count = 0 
             while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.1): # check the error between current state and current way point
                 # calculate the current twist
                 print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
@@ -158,12 +159,13 @@ class PIDcontroller:
                 self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
                 #print(coord(update_value, current_state))
                 time.sleep(0.1)
-                
-                if self.flag == True and timer = True:
+                count += 1
+                if self.flag == True and count > 3 :
                     print("True")
                     self.current_state = self.message_state
                     print("Current State in True:", self.current_state)
                     self.flag = False
+                    count = 0
                 else:
                     print("False")
                     # update the current state similar to open loop
