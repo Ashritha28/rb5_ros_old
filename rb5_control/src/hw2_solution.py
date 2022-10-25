@@ -198,7 +198,7 @@ class PIDcontroller:
 if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
-    waypoints = [[1.0,0.0,0.0],[1.0,2.0,0.0]]
+    waypoints = [[1.0,0.0,0.0],[1.0,2.0,math.pi],[0,0,0]]
     pid = PIDcontroller(0.005,0.005,0.005, waypoints)
     time.sleep(1.0)
     pid.planner()
