@@ -73,6 +73,8 @@ class PIDcontroller:
         self.pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
         self.current_state =  np.array([0.0,0.0,0.0])
         self.sub = rospy.Subscriber('/current_pose', Pose, self.pose_callback) 
+        self.message_state = np.array([0.0,0.0,0.0])
+        self.flag = False
 
     def setTarget(self, targetx, targety, targetw):
         """
@@ -126,17 +128,9 @@ class PIDcontroller:
 
         return result
 
-    def pose_callback(self, msg):
-
-        print("Here")
-        # waypoint = np.array([[0.0,0.0,0.0], 
-        #             [1.0,0.0,0.0],
-        #             [1.0,1.0,np.pi],
-        #             [0.0,0.0,0.0]]) 
+    def planner(self):
+        print("Planner")
         
-        # init pid controller
-        #pid = PIDcontroller(0.02,0.005,0.005)
-
         # init current state
         
 
@@ -165,27 +159,41 @@ class PIDcontroller:
                 #print(coord(update_value, current_state))
                 time.sleep(0.05)
 
-                if msg.pose:
-                    cur_pose_arr = np.asarray(msg.pose)
-                    print("Current pose shape:",cur_pose_arr.shape)
-                    print("Current Pose:",cur_pose_arr)
-                    cur_pose_matrix = cur_pose_arr.reshape(4,4)
-                    print("Current Pose:", cur_pose_matrix)
-                    trans = cur_pose_matrix[:3, 3]
-                    print("Translation:", trans)
-                    rot = cur_pose_matrix[:3, :3]
-                    print("Rotation part of pose:", rot)
-                    yaw = rotationMatrixToEulerAngles(rot)[0]
-                    # update current state based on visual feedback
-                    self.current_state = np.asarray([trans[0], trans[1], yaw])
-                    print("Current state:", self.current_state)
+                if self.flag == True:
+                    print("True")
+                    self.current_state = self.message_state
+                    self.flag = False
                     break
                 else:
+                    print("False")
                     # update the current state similar to open loop
                     self.current_state += update_value
                     # update_value = pid.update(cur_pose)
         # stop the car and exit
         self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
+
+
+    def pose_callback(self, msg):
+        print("Pose Callback")
+        if msg.pose:
+            cur_pose_arr = np.asarray(msg.pose)
+            print("Current pose shape:",cur_pose_arr.shape)
+            print("Current Pose:",cur_pose_arr)
+            cur_pose_matrix = cur_pose_arr.reshape(4,4)
+            print("Current Pose:", cur_pose_matrix)
+            trans = cur_pose_matrix[:3, 3]
+            print("Translation:", trans)
+            rot = cur_pose_matrix[:3, :3]
+            print("Rotation part of pose:", rot)
+            yaw = rotationMatrixToEulerAngles(rot)[0]
+            # update current state based on visual feedback
+            self.message_state = np.asarray([trans[0], trans[1], yaw])
+            print("Message state:", self.message_state)
+            self.flag = True
+        else:
+            print("Empty")
+            self.flag = False
+
 
 
 if __name__ == "__main__":
@@ -194,6 +202,7 @@ if __name__ == "__main__":
     waypoints = [[1.0,0.0,0.0]]
     pid = PIDcontroller(0.005,0.005,0.005, waypoints)
     time.sleep(1.0)
+    pid.planner()
     rospy.spin()
     
 
