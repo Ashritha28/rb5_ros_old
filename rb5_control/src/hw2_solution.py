@@ -40,6 +40,25 @@ def rotationMatrixToEulerAngles(R) :
     print(np.array([x, y, z]))
     return np.array([x, y, z])
 
+def genTwistMsg(desired_twist):
+    """
+    Convert the twist to twist msg.
+    """
+    twist_msg = Twist()
+    twist_msg.linear.x = desired_twist[0] 
+    twist_msg.linear.y = desired_twist[1] 
+    twist_msg.linear.z = 0
+    twist_msg.angular.x = 0
+    twist_msg.angular.y = 0
+    twist_msg.angular.z = desired_twist[2]
+    return twist_msg
+
+def coord(twist, current_state):
+    J = np.array([[np.cos(current_state[2]), np.sin(current_state[2]), 0.0],
+                  [-np.sin(current_state[2]), np.cos(current_state[2]), 0.0],
+                  [0.0,0.0,1.0]])
+    return np.dot(J, twist)
+
 class PIDcontroller:
     def __init__(self, Kp, Ki, Kd, waypoints):
         self.Kp = Kp
@@ -148,7 +167,8 @@ class PIDcontroller:
 
                 if msg.pose:
                     cur_pose_arr = np.asarray(msg.pose)
-                    print(cur_pose_arr)
+                    print("Current pose shape:",cur_pose_arr.shape)
+                    print("Current Pose:",cur_pose_arr)
                     cur_pose_matrix = cur_pose_arr.reshape(4,4)
                     print("Current Pose:", cur_pose_matrix)
                     trans = cur_pose_matrix[:3, 3]
@@ -159,6 +179,7 @@ class PIDcontroller:
                     # update current state based on visual feedback
                     self.current_state = np.asarray([trans[0], trans[1], yaw])
                     print("Current state:", self.current_state)
+                    break
                 else:
                     # update the current state similar to open loop
                     self.current_state += update_value
@@ -166,24 +187,6 @@ class PIDcontroller:
         # stop the car and exit
         self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
-def genTwistMsg(desired_twist):
-    """
-    Convert the twist to twist msg.
-    """
-    twist_msg = Twist()
-    twist_msg.linear.x = desired_twist[0] 
-    twist_msg.linear.y = desired_twist[1] 
-    twist_msg.linear.z = 0
-    twist_msg.angular.x = 0
-    twist_msg.angular.y = 0
-    twist_msg.angular.z = desired_twist[2]
-    return twist_msg
-
-def coord(twist, current_state):
-    J = np.array([[np.cos(current_state[2]), np.sin(current_state[2]), 0.0],
-                  [-np.sin(current_state[2]), np.cos(current_state[2]), 0.0],
-                  [0.0,0.0,1.0]])
-    return np.dot(J, twist)
 
 if __name__ == "__main__":
     import time
