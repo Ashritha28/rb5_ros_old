@@ -158,7 +158,7 @@ class PIDcontroller:
                 # publish the twist
                 self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
                 #print(coord(update_value, current_state))
-                time.sleep(0.1)
+                time.sleep(0.05)
                 
                 if self.flag == True:
                     print("True")
@@ -171,7 +171,7 @@ class PIDcontroller:
                     self.current_state += update_value
                     print("Current State in False:",self.current_state)
                     # update_value = pid.update(cur_pose)
-            time.sleep(0.1)
+            time.sleep(0.05)
         # stop the car and exit
         self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
