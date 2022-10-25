@@ -106,7 +106,7 @@ class PIDcontroller:
 
         return result
 
-    def pose_callback(msg):
+    def pose_callback(self, msg):
 
         print("Here")
         # waypoint = np.array([[0.0,0.0,0.0], 
