@@ -139,6 +139,7 @@ class PIDcontroller:
             self.current_state += update_value
             while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.5): # check the error between current state and current way point
                 # calculate the current twist
+                print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
                 update_value = self.update(self.current_state)
                 # publish the twist
                 self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
@@ -149,6 +150,7 @@ class PIDcontroller:
                     cur_pose_arr = np.asarray(msg.pose)
                     print(cur_pose_arr)
                     cur_pose_matrix = cur_pose_arr.reshape(4,4)
+                    print("Current Pose:", cur_pose_matrix)
                     trans = cur_pose_matrix[:3, 3]
                     print("Translation:", trans)
                     rot = cur_pose_matrix[:3, :3]
