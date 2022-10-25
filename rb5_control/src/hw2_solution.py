@@ -206,7 +206,8 @@ if __name__ == "__main__":
     waypoints = [[1.0,0.0,0.0], [1.0,2.0,math.pi]]
     # pid = PIDcontroller(0.05,0.005,0.005, waypoints)
     # pid = PIDcontroller(0.05,0.0001,0.08, waypoints)
-    pid = PIDcontroller(0.00185,0.0015,0.01, waypoints)
+    #pid = PIDcontroller(0.0185,0.0015,0.01, waypoints) -- working approximately fine
+    pid = PIDcontroller(0.005,0.0015,0.01, waypoints)
     time.sleep(1.0)
     pid.planner()
     rospy.spin()
