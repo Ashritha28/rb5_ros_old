@@ -137,7 +137,7 @@ class PIDcontroller:
             time.sleep(0.05)
             # update the current state
             self.current_state += update_value
-            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.05): # check the error between current state and current way point
+            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.5): # check the error between current state and current way point
                 # calculate the current twist
                 update_value = self.update(self.current_state)
                 # publish the twist
@@ -153,9 +153,10 @@ class PIDcontroller:
                     print("Translation:", trans)
                     rot = cur_pose_matrix[:3, :3]
                     print("Rotation part of pose:", rot)
-                    yaw = rotationMatrixToEulerAngles(rot)[2]
+                    yaw = rotationMatrixToEulerAngles(rot)[0]
                     # update current state based on visual feedback
                     self.current_state = np.asarray([trans[0], trans[1], yaw])
+                    print("Current state:", self.current_state)
                 else:
                     # update the current state similar to open loop
                     self.current_state += update_value
@@ -186,7 +187,7 @@ if __name__ == "__main__":
     import time
     rospy.init_node("hw2")
     waypoints = [[1.0,0.0,0.0]]
-    pid = PIDcontroller(0.01,0.005,0.005, waypoints)
+    pid = PIDcontroller(0.005,0.005,0.005, waypoints)
     time.sleep(1.0)
     rospy.spin()
     
