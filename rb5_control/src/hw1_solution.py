@@ -105,7 +105,7 @@ if __name__ == "__main__":
     #                      [0.0,0.0,0.0]]) 
     waypoint = np.array([[0.0,0.0,0.0], 
                          [1.0,0.0,0.0],
-                         [1.0,2.0,np.pi])
+                         [1.0,2.0,np.pi]])
 
     # init pid controller
     pid = PIDcontroller(0.02,0.005,0.005)
