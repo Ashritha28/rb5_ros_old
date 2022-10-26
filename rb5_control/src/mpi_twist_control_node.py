@@ -26,7 +26,7 @@ class MegaPiControllerNode:
         result = np.dot(jacobian_matrix, desired_twist)
 
         # send command to each wheel
-        self.mpi_ctrl.setFourMotors(0.9*result[0][0], result[1][0], result[2][0], result[3][0])
+        self.mpi_ctrl.setFourMotors(result[0][0], result[1][0], result[2][0], result[3][0])
         
 
 if __name__ == "__main__":
