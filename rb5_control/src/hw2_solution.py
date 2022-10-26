@@ -188,7 +188,11 @@ class PIDcontroller:
             print("Translation:", trans)
             rot = cur_pose_matrix[:3, :3]
             print("Rotation part of pose:", rot)
-            yaw = rotationMatrixToEulerAngles(rot)[2]
+            eulerangles = rotationMatrixToEulerAngles(rot)
+            yaw = eulerangles[2]
+            print("Angle with z-axis:", yaw)
+            print("Angle with y-axis:", eulerangles[1])
+            print("Angle with x-axis:", eulerangles[0])
             # update current state based on visual feedback
             self.message_state = np.asarray([trans[0], trans[1], yaw])
             print("Message state:", self.message_state)
