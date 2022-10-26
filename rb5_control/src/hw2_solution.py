@@ -151,7 +151,7 @@ class PIDcontroller:
             time.sleep(0.05)
             # update the current state
             self.current_state += update_value
-            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.08): # check the error between current state and current way point
+            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.05): # check the error between current state and current way point
                 # calculate the current twist
                 print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
                 update_value = self.update(self.current_state)
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     #pid = PIDcontroller(0.0185,0.0015,0.01, waypoints) -- working approximately fine
     # pid = PIDcontroller(0.0185,0.0015,0.01, waypoints) -- works best for now
     # pid = PIDcontroller(0.012,0.0015,0.1, waypoints) -- worked perfectly for 2 points
-    pid = PIDcontroller(0.0125,0.0015,0.08, waypoints)
+    pid = PIDcontroller(0.0125,0.0015,0.05, waypoints)
     time.sleep(1.0)
     pid.planner()
     rospy.spin()
