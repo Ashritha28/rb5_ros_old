@@ -187,7 +187,11 @@ class PIDcontroller:
             print("Rotation Error at waypoint:", self.current_state[2]-wp[2]) 
             errors.append(error_wp)   
             time.sleep(0.05)
-        print("2D Trajectory points:", traj_points)
+        #print("2D Trajectory points:", traj_points)
+        with open(r'traj.txt', 'w') as fp:
+            fp.write('\n'.join(traj_points))
+        with open(r'errors.txt', 'w') as fp:
+            fp.write('\n'.join(errors))
         # Total distance
         print(total_dist)
         # Total Orientation
