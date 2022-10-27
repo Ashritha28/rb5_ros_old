@@ -135,6 +135,7 @@ class PIDcontroller:
         total_dist = 0
         total_orientation = 0
         traj_points = []
+        errors = []
         # init current state
         
 
@@ -142,6 +143,7 @@ class PIDcontroller:
         # once error between the current state and the current way point is small enough, 
         # the current way point will be updated with a new point.
         for wp in self.waypoints:
+            error_wp = []
             print("move to way point", wp)
             # set wp as the target point
             self.setTarget(wp)
@@ -157,6 +159,7 @@ class PIDcontroller:
             self.current_state += update_value
             total_dist += total_dist + np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
             traj_points.append([self.current_state[0], self.current_state[1]])
+            error_wp.append(self.getError(self.current_state, wp)[:2])
             while(np.linalg.norm(self.getError(self.current_state, wp)[:2]) > 0.1): # check the error between current state and current way point
                 # calculate the current twist
                 #print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
@@ -181,7 +184,8 @@ class PIDcontroller:
                 total_dist += total_dist + np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
                 total_orientation += abs(self.current_state[2]-self.current_state_before_update[2])
             print("Translation Error at waypoint:", np.linalg.norm(self.getError(self.current_state, wp)[:2]))
-            print("Rotation Error at waypoint:", self.current_state[2]-wp[2])    
+            print("Rotation Error at waypoint:", self.current_state[2]-wp[2]) 
+            errors.append(error_wp)   
             time.sleep(0.05)
         print("2D Trajectory points:", traj_points)
         # Total distance
