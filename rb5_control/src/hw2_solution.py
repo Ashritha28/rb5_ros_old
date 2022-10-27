@@ -189,9 +189,9 @@ class PIDcontroller:
             time.sleep(0.05)
         #print("2D Trajectory points:", traj_points)
         with open(r'traj.txt', 'w') as fp:
-            fp.write(','.join(traj_points))
+            fp.write(','.join(str(v) for v in traj_points))
         with open(r'errors.txt', 'w') as fp:
-            fp.write(','.join(errors))
+            fp.write(','.join(str(v) for v in errors))
         # Total distance
         print(total_dist)
         # Total Orientation
