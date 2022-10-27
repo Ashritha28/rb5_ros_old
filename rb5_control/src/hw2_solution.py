@@ -154,7 +154,7 @@ class PIDcontroller:
             time.sleep(0.05)
             # update the current state
             self.current_state += update_value
-            traj_points.add([self.current_state[0], self.current_state[1]])
+            traj_points.append([self.current_state[0], self.current_state[1]])
             while(np.linalg.norm(self.getError(self.current_state, wp)[:2]) > 0.1): # check the error between current state and current way point
                 # calculate the current twist
                 #print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
