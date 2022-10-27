@@ -51,7 +51,7 @@ def genTwistMsg(desired_twist):
     twist_msg.angular.x = 0
     twist_msg.angular.y = 0
     twist_msg.angular.z = desired_twist[2]
-    print("Twist message:",twist_msg)
+    #print("Twist message:",twist_msg)
     return twist_msg
 
 def coord(twist, current_state):
@@ -191,7 +191,7 @@ class PIDcontroller:
 
 
     def pose_callback(self, msg):
-        print("Pose Callback")
+        #print("Pose Callback")
         if msg.pose:
             cur_pose_arr = np.asarray(msg.pose)
             #print("Current pose shape:",cur_pose_arr.shape)
