@@ -31,20 +31,20 @@ def tag_callback(msg):
         apriltag_id = detection.id
         position = detection.pose.position
         position = np.array([[position.x], [position.y], [position.z]])
-        print("ID:", apriltag_id)
-        print("Position:", position)
+        #print("ID:", apriltag_id)
+        #print("Position:", position)
         tag_orientation = detection.pose.orientation 
-        print("Tag oreintation quaternion:", tag_orientation)
+        #print("Tag oreintation quaternion:", tag_orientation)
         
         # r = np.array(Rotation.from_quat(tag_orientation))
         # print("Rotation matrix using scipy:", r)
         r = tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
         tag_orientation.z, tag_orientation.w])[:3,:3]
-        print("Rotation Matrix using tf: \n", r)
-        print("Size of rotation matrix:", r.shape)
-        print("Size of position matrix:",position.shape)
+        #print("Rotation Matrix using tf: \n", r)
+        #print("Size of rotation matrix:", r.shape)
+        #print("Size of position matrix:",position.shape)
         cTa = np.append(np.append(r, position,axis=1), [[0,0,0,1]], axis=0)
-        print("cTa: \n",cTa)
+        #print("cTa: \n",cTa)
         rTa = np.matmul(rTc, cTa)
         print("AprilTag in robot coordinates rTa: \n",rTa)
         aTr = np.linalg.inv(rTa)

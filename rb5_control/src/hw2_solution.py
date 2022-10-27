@@ -37,7 +37,7 @@ def rotationMatrixToEulerAngles(R) :
         x = math.atan2(-R[1,2], R[1,1])
         y = math.atan2(-R[2,0], sy)
         z = 0
-    print(np.array([x, y, z]))
+    #print(np.array([x, y, z]))
     return np.array([x, y, z])
 
 def genTwistMsg(desired_twist):
@@ -73,6 +73,7 @@ class PIDcontroller:
         self.waypoints = waypoints
         self.pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
         self.current_state =  np.array([0.0,0.0,0.0])
+        self.current_state_before_update =  np.array([0.0,0.0,0.0])
         self.sub = rospy.Subscriber('/current_pose', Pose, self.pose_callback) 
         self.message_state = np.array([0.0,0.0,0.0])
         self.flag = False
@@ -131,7 +132,9 @@ class PIDcontroller:
 
     def planner(self):
         print("Planner")
-        
+        total_dist = 0
+        total_orientation = 0
+        traj_points = []
         # init current state
         
 
@@ -151,27 +154,39 @@ class PIDcontroller:
             time.sleep(0.05)
             # update the current state
             self.current_state += update_value
+            traj_points.add([self.current_state[0], self.current_state[1]])
             while(np.linalg.norm(self.getError(self.current_state, wp)[:2]) > 0.1): # check the error between current state and current way point
                 # calculate the current twist
-                print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
+                #print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
                 update_value = self.update(self.current_state)
                 # publish the twist
                 self.pub_twist.publish(genTwistMsg(coord(update_value, self.current_state)))
                 #print(coord(update_value, current_state))
                 time.sleep(0.05)
-                
+                self.current_state_before_update = self.current_state
                 if self.flag == True:
-                    print("True")
+                    #print("True")
                     self.current_state = self.message_state
-                    print("Current State in True:", self.current_state)
+                    #print("Current State in True:", self.current_state)
                     self.flag = False
                 else:
-                    print("False")
+                    #print("False")
                     # update the current state similar to open loop
                     self.current_state += update_value
-                    print("Current State in False:",self.current_state)
+                    #print("Current State in False:",self.current_state)
                     # update_value = pid.update(cur_pose)
+                traj_points.add([self.current_state[0], self.current_state[1]])
+                total_dist += total_dist + math.dist([self.current_state_before_update[0],self.current_state_before_update[1]],
+                [self.current_state[0], self.current_state[1]])
+                total_orientation = abs(self.current_state[2]-self.current_state_before_update[2])
+            print("Translation Error at waypoint:", np.linalg.norm(self.getError(self.current_state, wp)[:2]))
+            print("Rotation Error at waypoint:", self.current_state[2]-wp[2])    
             time.sleep(0.05)
+        print("2D Trajectory points:", traj_points)
+        # Total distance
+        print(total_dist)
+        # Total Orientation
+        print(total_orientation)    
         # stop the car and exit
         self.pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
@@ -180,25 +195,25 @@ class PIDcontroller:
         print("Pose Callback")
         if msg.pose:
             cur_pose_arr = np.asarray(msg.pose)
-            print("Current pose shape:",cur_pose_arr.shape)
-            print("Current Pose:",cur_pose_arr)
+            #print("Current pose shape:",cur_pose_arr.shape)
+            #print("Current Pose:",cur_pose_arr)
             cur_pose_matrix = cur_pose_arr.reshape(4,4)
-            print("Current Pose:", cur_pose_matrix)
+            #print("Current Pose:", cur_pose_matrix)
             trans = cur_pose_matrix[:3, 3]
-            print("Translation:", trans)
+            #print("Translation:", trans)
             rot = cur_pose_matrix[:3, :3]
-            print("Rotation part of pose:", rot)
+            #print("Rotation part of pose:", rot)
             eulerangles = rotationMatrixToEulerAngles(rot)
             yaw = eulerangles[2]
-            print("Angle with z-axis:", yaw)
-            print("Angle with y-axis:", eulerangles[1])
-            print("Angle with x-axis:", eulerangles[0])
+            #print("Angle with z-axis:", yaw)
+            #print("Angle with y-axis:", eulerangles[1])
+            #print("Angle with x-axis:", eulerangles[0])
             # update current state based on visual feedback
             self.message_state = np.asarray([trans[0], trans[1], yaw])
-            print("Message state:", self.message_state)
+            #print("Message state:", self.message_state)
             self.flag = True
         else:
-            print("Empty")
+            #print("Empty")
             self.flag = False
 
 
