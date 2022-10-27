@@ -175,7 +175,7 @@ class PIDcontroller:
                     self.current_state += update_value
                     #print("Current State in False:",self.current_state)
                     # update_value = pid.update(cur_pose)
-                traj_points.add([self.current_state[0], self.current_state[1]])
+                traj_points.append([self.current_state[0], self.current_state[1]])
                 total_dist += total_dist + math.dist([self.current_state_before_update[0],self.current_state_before_update[1]],
                 [self.current_state[0], self.current_state[1]])
                 total_orientation = abs(self.current_state[2]-self.current_state_before_update[2])
