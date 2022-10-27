@@ -157,7 +157,7 @@ class PIDcontroller:
             # update the current state
             self.current_state_before_update = self.current_state
             self.current_state += update_value
-            total_dist += total_dist + np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
+            total_dist += np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
             traj_points.append([self.current_state[0], self.current_state[1]])
             
             while(np.linalg.norm(self.getError(self.current_state, wp)[:2]) > 0.1): # check the error between current state and current way point
@@ -182,7 +182,7 @@ class PIDcontroller:
                     #print("Current State in False:",self.current_state)
                     # update_value = pid.update(cur_pose)
                 traj_points.append([self.current_state[0], self.current_state[1]])
-                total_dist += total_dist + np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
+                total_dist +=  np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
                 total_orientation += abs(self.current_state[2]-self.current_state_before_update[2])
             print("Translation Error at waypoint:", np.linalg.norm(self.getError(self.current_state, wp)[:2]))
             print("Rotation Error at waypoint:", self.current_state[2]-wp[2]) 
