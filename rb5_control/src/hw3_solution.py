@@ -6,6 +6,7 @@ from april_detection.msg import Pose
 import numpy as np
 import math
 from std_msgs.msg import Float64MultiArray
+from numpy.linalg import inv, multi_dot
 
 """
 The class of the pid controller.
@@ -74,7 +75,7 @@ class PIDcontroller:
         self.pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
         self.current_state =  np.array([0.0,0.0,0.0])
         self.current_state_before_update =  np.array([0.0,0.0,0.0])
-        self.sub = rospy.Subscriber('/current_pose', Pose, self.pose_callback) 
+        self.sub = rospy.Subscriber('/apriltag_detection_array', AprilTagDetectionArray, self.pose_callback) 
         self.message_state = np.array([0.0,0.0,0.0])
         self.flag = False
 
@@ -203,30 +204,47 @@ class PIDcontroller:
 
     def pose_callback(self, msg):
         #print("Pose Callback")
-        if msg.pose:
-            cur_pose_arr = np.asarray(msg.pose)
-            #print("Current pose shape:",cur_pose_arr.shape)
-            #print("Current Pose:",cur_pose_arr)
-            cur_pose_matrix = cur_pose_arr.reshape(4,4)
-            #print("Current Pose:", cur_pose_matrix)
-            trans = cur_pose_matrix[:3, 3]
-            #print("Translation:", trans)
-            rot = cur_pose_matrix[:3, :3]
-            #print("Rotation part of pose:", rot)
-            eulerangles = rotationMatrixToEulerAngles(rot)
-            yaw = eulerangles[2]
-            #print("Angle with z-axis:", yaw)
-            #print("Angle with y-axis:", eulerangles[1])
-            #print("Angle with x-axis:", eulerangles[0])
-            # update current state based on visual feedback
-            self.message_state = np.asarray([trans[0], trans[1], yaw])
-            #print("Message state:", self.message_state)
-            self.flag = True
+        if msg.detections:
+            for detection in msg.detections:
+                apriltag_id = detection.id
+                position = detection.pose.position
+                position = np.array([[position.x], [position.y], [position.z]])
+                tag_orientation = detection.pose.orientation 
+                r = tf.transformations.quaternion_matrix([tag_orientation.x, tag_orientation.y, 
+                tag_orientation.z, tag_orientation.w])[:3,:3]
+                eulerAngles = rotationMatrixToEulerAngles(r)
+                self.message_state = np.asarray([trans[0], trans[1], yaw])
+                #print("Message state:", self.message_state)
+                self.flag = True
         else:
             #print("Empty")
             self.flag = False
 
+class kalman:
+    def __init__(self) -> None:
+        self.loc =[0,0,0]
+        self.sigma = [[0.02,0,0],
+        [0,0.02,0,0],
+        [0,0,0.02]]
+        #White noise
+        self.R = np.array([[.001, .0, .0],
+              [.0, .001, .0],
+              [.0, .0, .0001]])
+        self.Q=np.eye(2)
+        self.flist=[]
 
+    def prediction():
+        self.s_final = multi_dot([F, self.s_initial]) 
+
+        self.sigma_final = multi_dot([F, self.sigma_initial, F.T]) + self.Q
+
+
+    def update():
+        self.kalman_gain = multi_dot([self.sigma_final, self.H.T, inv(multi_dot([self.H, self.sigma_final, self.H.T])+ self.R)])
+        self.innovation = self.z - multi_dot([self.H, self.s_final])
+        self.s_initial = self.s_final + multi_dot([self.kalman_gain, self.innovation])
+
+        self.sigma_initial  = (np.eye(3*N_landmarks+3) - multi_dot([self.K, self.H])).dot(self.sigma_final)
 
 if __name__ == "__main__":
     import time
