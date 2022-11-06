@@ -160,7 +160,7 @@ class PIDcontroller:
             total_dist += np.linalg.norm(self.current_state[:2]-self.current_state_before_update[:2])
             traj_points.append([self.current_state[0], self.current_state[1]])
             
-            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.1): # check the error between current state and current way point
+            while(np.linalg.norm(self.getError(self.current_state, wp)) > 0.05): # check the error between current state and current way point
                 # calculate the current twist
                 #print("Error:", np.linalg.norm(self.getError(self.current_state, wp)))
                 error_wp.append(self.getError(self.current_state, wp)[:2])
