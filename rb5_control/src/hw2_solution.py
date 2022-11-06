@@ -242,7 +242,7 @@ if __name__ == "__main__":
     # pid = PIDcontroller(0.0125,0.0015,0.05, waypoints) -- worked perfectly for 2 points
     
     # pid = PIDcontroller(0.0185,0.0015,0.09, waypoints) --- perfect for hw2
-    pid = PIDcontroller(0.0185,0.005,0.09, waypoints)
+    pid = PIDcontroller(0.0185,0.008,0.09, waypoints)
     time.sleep(1.0)
     pid.planner()
     rospy.spin()
