@@ -10,6 +10,7 @@ import tf
 import tf2_ros
 from tf.transformations import quaternion_matrix
 from numpy.linalg import inv, multi_dot
+from april_detection.msg import AprilTagDetectionArray
 
 """
 The class of the pid controller.
