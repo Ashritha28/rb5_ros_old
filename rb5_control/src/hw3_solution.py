@@ -10,6 +10,7 @@ import tf
 import tf2_ros
 from tf.transformations import quaternion_matrix
 from numpy.linalg import inv, multi_dot
+from math import cos, sin
 
 """
 The class of the pid controller.
@@ -23,14 +24,15 @@ The class of the pid controller.
 # Modify PID controller
 
 class KalmanFilter:
-    def __init__(self):
-        self.robot_id = 10
+    def __init__(self, listener):
+        self.listener = listener
+        self.robot_id = 100
         self.s = {
-            10: [0.0,0.0,0.0]
+            100: [0.0,0.0,0.0]
         }
-        self.sigma = np.array([[0.1, 0.0, 0.0],
-              [0.0, 0.1, 0.0],
-              [0.0, 0.0, 0.01]])
+        self.sigma = np.array([[0.2, 0.0, 0.0],
+              [0.0, 0.2, 0.0],
+              [0.0, 0.0, 0.02]])
         self.R = np.array([[0.01, 0.0, 0.0],
               [0.0, 0.01, 0.0],
               [0.0, 0.0, 0.001]])
@@ -40,18 +42,14 @@ class KalmanFilter:
         self.H = np.array([[0.0, 0.0, 0.0],
               [0.0, 0.0, 0.0],
               [0.0, 0.0, 0.0]])
-        self.zt = np.array([[0.0],
-                           [0.0],
-                           [0.0]])
+        self.zt = {}
         self.seen_ids = []
-
 
     def predict_state(self, prev_state, Gu):
         print("Previous state: ", prev_state)
         print("Control update: ", Gu)
         self.s[self.robot_id] = prev_state + Gu
-        print("Prediction: ", self.s)
-
+        print("Prediction state: ", self.s)
 
     def predict_sigma(self):
         self.sigma = self.sigma + self.Q
@@ -68,8 +66,8 @@ class KalmanFilter:
     def restack_Q(self):
         q_shape = np.shape(self.Q)
         top_matrix = np.hstack((self.Q, np.zeros((q_shape[0], 3))))
-        bottom_matrix = np.hstack((np.zeros((3, q_shape[1])), self.Q[0:3, 0:3]))
-        self.Q = np.vstack((top_matrix, bottom_matrix))
+        bottom_matrix = np.hstack((np.zeros((3, q_shape[1])), np.zeros((3,3))))
+        self.R = np.vstack((top_matrix, bottom_matrix))
 
     def restack_R(self):
         r_shape = np.shape(self.R)
@@ -82,7 +80,24 @@ class KalmanFilter:
         self.K = np.matmul(np.matmul(self.sigma, np.transpose(self.H)), S)
 
     def compute_H(self):
-        return None
+        n = len(self.zt)
+        self.H = np.array([])
+        for i in range(n):
+            self.H = np.vstack((self.H, -1 * np.eye(3, dtype = float)))
+        self.H = np.hstack((self.H, np.eye(3 * n, dtype =float)))
+
+    def compute_rot_matrix(self):
+        n = len(self.zt)
+        theta = self.s[self.robot_id][2]
+        rot = np.array([[cos(theta), sin(theta), 0.0],
+              [-sin(theta), cos(theta), 0.0],
+              [0.0, 0.0, 1.0]])
+
+    def compute_error(self):
+        Hs = np.matmul(self.H, self.s)
+        rot = self.compute_rot_matrix()
+
+
 
     def update_state(self):
         self.s = self.s + np.matmul(self.K, self.zt - np.matmul(self.H, self.s))
@@ -92,6 +107,14 @@ class KalmanFilter:
         I = np.eye(np.shape(KH)[0])
         self.sigma = np.matmul((I - KH), self.sigma)
 
+    def algo_run(self, prev_state, update_value):
+        self.predict_state(prev_state, update_value)
+        self.predict_sigma()
+        new_measurements = getMeasurement(listener, self)
+        self.compute_H()
+        self.compute_kalman_gain()
+        self.update_state()
+        self.update_sigma()
 
 class PIDcontroller:
     def __init__(self, Kp, Ki, Kd):
@@ -162,8 +185,9 @@ def getMeasurement(l, kf):
     Given the tf listener, we consider the camera's z-axis is the header of the car
     """
     br = tf.TransformBroadcaster()
-    result = None
+    all_results = {}
     foundSolution = False
+    kf.zt = {}
 
     for i in range(0, 9):
         camera_name = "camera_" + str(i)
@@ -181,15 +205,20 @@ def getMeasurement(l, kf):
                 br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0, 0, angle),
                                  rospy.Time.now(), "base_link", "map")
                 result = np.array([trans[0], trans[1], angle])
-                kf.seen_ids.append(i)
-                kf.update_state_after_measurement(i, result)
-                foundSolution = True
+                if i in kf.seen_ids:
+                    # Update zt
+                    kf.zt[i] = result #Assuming here we get everything in world co-ordinates
+                else:
+                    # Add to seen_id
+                    kf.seen_ids.append(i)
+                    all_results[i] = result
+                #foundSolution = True
                 #break - Do not break, take as many measurements as possible
             except (
             tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException):
                 print("meet error")
     listener.clear()
-    return foundSolution, result
+    return all_results
 
 
 def genTwistMsg(desired_twist):
@@ -224,16 +253,17 @@ if __name__ == "__main__":
 
     listener = tf.TransformListener()
 
-    waypoint = np.array([[0.0, 0.0, 0.0],
-                         [1.0, 0.0, 0.0],
-                         [1.0, 2.0, np.pi],
-                         [0.0, 0.0, 0.0]])
+    waypoint = np.array([[1.0, 0.0, np.pi/2],
+                         [1.0, 1.0, np.pi],
+                         [0.0, 1.0, -np.pi/2],
+                         [0.0, 0.0, 0]])
 
     # init pid controller
     pid = PIDcontroller(0.0185, 0.0015, 0.09)
 
     # init current state
     current_state = np.array([0.0, 0.0, 0.0])
+    kf = KalmanFilter(listener)
 
     # in this loop we will go through each way point.
     # once error between the current state and the current way point is small enough,
@@ -249,6 +279,11 @@ if __name__ == "__main__":
         pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
         # print(coord(update_value, current_state))
         time.sleep(0.05)
+        # Run Kalman Filter Algorithm
+        kf.algo_run(current_state, update_value)
+
+
+
         # update the current state
         current_state += update_value
         found_state, estimated_state = getCurrentPos(listener)
