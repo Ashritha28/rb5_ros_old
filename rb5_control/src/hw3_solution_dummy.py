@@ -83,12 +83,14 @@ def getCurrentPos(l):
     br = tf.TransformBroadcaster()
     result = None
     foundSolution = False
+    print("HELLO")
 
     for i in range(0, 9):
         camera_name = "camera_" + str(i)
         if l.frameExists(camera_name):
             try:
                 now = rospy.Time()
+                print("UMMMMMMM")
                 # wait for the transform ready from the map to the camera for 1 second.
                 l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
                 # extract the transform camera pose in the map coordinate.
@@ -168,6 +170,7 @@ if __name__ == "__main__":
         # update the current state
         current_state += update_value
         found_state, estimated_state = getCurrentPos(listener)
+        print(found_state, estimated_state)
         if found_state: # if the tag is detected, we can use it to update current state.
             current_state = estimated_state
         while(np.linalg.norm(pid.getError(current_state, wp)) > 0.05): # check the error between current state and current way point
