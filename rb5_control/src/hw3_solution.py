@@ -9,10 +9,88 @@ import math
 import tf
 import tf2_ros
 from tf.transformations import quaternion_matrix
+from numpy.linalg import inv, multi_dot
 
 """
 The class of the pid controller.
 """
+
+##### TODO
+# Figure out how to get H matrix
+# When should I take measurement?
+# When I get tag in robot frame, how to convert to WC?
+# Write uncertainity (sigma) after every timestep into a file
+# Modify PID controller
+
+class KalmanFilter:
+    def __init__(self):
+        self.robot_id = 10
+        self.s = {
+            10: [0.0,0.0,0.0]
+        }
+        self.sigma = np.array([[0.1, 0.0, 0.0],
+              [0.0, 0.1, 0.0],
+              [0.0, 0.0, 0.01]])
+        self.R = np.array([[0.01, 0.0, 0.0],
+              [0.0, 0.01, 0.0],
+              [0.0, 0.0, 0.001]])
+        self.Q = np.array([[0.03, 0.0, 0.0],
+              [0.0, 0.03, 0.0],
+              [0.0, 0.0, 0.003]])
+        self.H = np.array([[0.0, 0.0, 0.0],
+              [0.0, 0.0, 0.0],
+              [0.0, 0.0, 0.0]])
+        self.zt = np.array([[0.0],
+                           [0.0],
+                           [0.0]])
+        self.seen_ids = []
+
+
+    def predict_state(self, prev_state, Gu):
+        print("Previous state: ", prev_state)
+        print("Control update: ", Gu)
+        self.s[self.robot_id] = prev_state + Gu
+        print("Prediction: ", self.s)
+
+
+    def predict_sigma(self):
+        self.sigma = self.sigma + self.Q
+
+    def update_state_after_measurement(self, id, landmark_r):
+        return None
+
+    def restack_sigma(self):
+        sigma_shape = np.shape(self.sigma)
+        top_matrix = np.hstack((self.sigma, np.zeros((sigma_shape[0],3))))
+        bottom_matrix = np.hstack((np.zeros((3, sigma_shape[1])), self.sigma[0:3, 0:3] + self.R[0:3, 0:3]))
+        self.sigma = np.vstack((top_matrix, bottom_matrix))
+
+    def restack_Q(self):
+        q_shape = np.shape(self.Q)
+        top_matrix = np.hstack((self.Q, np.zeros((q_shape[0], 3))))
+        bottom_matrix = np.hstack((np.zeros((3, q_shape[1])), self.Q[0:3, 0:3]))
+        self.Q = np.vstack((top_matrix, bottom_matrix))
+
+    def restack_R(self):
+        r_shape = np.shape(self.R)
+        top_matrix = np.hstack((self.R, np.zeros((r_shape[0], 3))))
+        bottom_matrix = np.hstack((np.zeros((3, r_shape[1])), self.R[0:3, 0:3]))
+        self.R = np.vstack((top_matrix, bottom_matrix))
+
+    def compute_kalman_gain(self):
+        S = inv(np.matmul(np.matmul(self.H, self.sigma), np.transpose(self.H)) + self.R)
+        self.K = np.matmul(np.matmul(self.sigma, np.transpose(self.H)), S)
+
+    def compute_H(self):
+        return None
+
+    def update_state(self):
+        self.s = self.s + np.matmul(self.K, self.zt - np.matmul(self.H, self.s))
+
+    def update_sigma(self):
+        KH = np.matmul(self.K, self.H)
+        I = np.eye(np.shape(KH)[0])
+        self.sigma = np.matmul((I - KH), self.sigma)
 
 
 class PIDcontroller:
@@ -79,7 +157,7 @@ class PIDcontroller:
         return result
 
 
-def getCurrentPos(l):
+def getMeasurement(l, kf):
     """
     Given the tf listener, we consider the camera's z-axis is the header of the car
     """
@@ -103,8 +181,10 @@ def getCurrentPos(l):
                 br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0, 0, angle),
                                  rospy.Time.now(), "base_link", "map")
                 result = np.array([trans[0], trans[1], angle])
+                kf.seen_ids.append(i)
+                kf.update_state_after_measurement(i, result)
                 foundSolution = True
-                break
+                #break - Do not break, take as many measurements as possible
             except (
             tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException):
                 print("meet error")
