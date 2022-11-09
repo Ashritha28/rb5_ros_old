@@ -156,8 +156,7 @@ class PIDcontroller:
 
         return result
 
-
-def getMeasurement(l, kf):
+def getCurrentPos(l):
     """
     Given the tf listener, we consider the camera's z-axis is the header of the car
     """
@@ -174,20 +173,15 @@ def getMeasurement(l, kf):
                 l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
                 # extract the transform camera pose in the map coordinate.
                 (trans, rot) = l.lookupTransform("map", camera_name, now)
-                print(trans, rot)
                 # convert the rotate matrix to theta angle in 2d
                 matrix = quaternion_matrix(rot)
                 angle = math.atan2(matrix[1][2], matrix[0][2])
                 # this is not required, I just used this for debug in RVIZ
-                br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0, 0, angle),
-                                 rospy.Time.now(), "base_link", "map")
+                br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0,0,angle), rospy.Time.now(), "base_link", "map")
                 result = np.array([trans[0], trans[1], angle])
-                kf.seen_ids.append(i)
-                kf.update_state_after_measurement(i, result)
                 foundSolution = True
-                #break - Do not break, take as many measurements as possible
-            except (
-            tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException):
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException):
                 print("meet error")
     listener.clear()
     return foundSolution, result
@@ -263,7 +257,7 @@ if __name__ == "__main__":
     # in this loop we will go through each way point.
     # once error between the current state and the current way point is small enough,
     # the current way point will be updated with a new point.
-    found_state, estimated_state = getMeasurement(listener)
+    found_state, estimated_state = getCurrentPos(listener)
     print(found_state, estimated_state)
 
     self.sub = rospy.Subscriber('/apriltag_detection_array', AprilTagDetectionArray, tag_callback)
