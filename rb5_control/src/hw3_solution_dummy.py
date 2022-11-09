@@ -261,7 +261,7 @@ if __name__ == "__main__":
     found_state, estimated_state = getCurrentPos(listener)
     print(found_state, estimated_state)
 
-    self.sub = rospy.Subscriber('/apriltag_detection_array', AprilTagDetectionArray, tag_callback)
+    sub = rospy.Subscriber('/apriltag_detection_array', AprilTagDetectionArray, tag_callback)
     
 
     
