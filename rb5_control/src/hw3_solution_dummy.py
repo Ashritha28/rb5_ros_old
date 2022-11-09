@@ -162,7 +162,7 @@ if __name__ == "__main__":
         # calculate the current twist
         update_value = pid.update(current_state)
         # publish the twist
-        pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
+        # pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
         #print(coord(update_value, current_state))
         time.sleep(0.05)
         # update the current state
@@ -174,7 +174,7 @@ if __name__ == "__main__":
             # calculate the current twist
             update_value = pid.update(current_state)
             # publish the twist
-            pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
+            # pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
             #print(coord(update_value, current_state))
             time.sleep(0.05)
             # update the current state
@@ -183,5 +183,5 @@ if __name__ == "__main__":
             if found_state:
                 current_state = estimated_state
     # stop the car and exit
-    pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
+    # pub_twist.publish(genTwistMsg(np.array([0.0,0.0,0.0])))
 
