@@ -1,114 +1,73 @@
-#include <ros/ros.h>
-#include <ros/console.h>
-#include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
-
-
 #include "april_detection.h"
-#include "sensor_msgs/Image.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/PoseArray.h"
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
-
-ros::Publisher pose_pub;
-ros::Subscriber image_sub;
-AprilDetection det;
 
 
-double distortion_coeff[] = 
-	{0.008549, -0.016273, -0.002954, -0.003708, 0.000000};
-double intrinsics[] = {683.558755,    0.     ,  961.607445,
-                       0.     ,  680.809134,  547.701668,
-                       0.     ,    0.     ,    1.};
+AprilDetection::AprilDetection(){
 
-const cv::Mat d(cv::Size(1, 5), CV_64FC1, distortion_coeff);
-const cv::Mat K(cv::Size(3, 3), CV_64FC1, intrinsics);
+  a_detector = apriltag_detector_create();
 
-cv::Mat rectify(const cv::Mat image){
-  cv::Mat image_rect = image.clone();
-  const cv::Mat new_K = cv::getOptimalNewCameraMatrix(K, d, image.size(), 1.0); 
-  cv::undistort(image, image_rect, K, d, new_K); 
+  // tag36h11
+  tf = tag36h11_create();
 
-  return image_rect;
+  //getopt_t *getopt = getopt_create();
+  //const char *famname = getopt_get_string(getopt, "family");
+
+  // configure detector
+  //apriltag_detector_add_family_bits(a_detector, tf, getopt_get_int(getopt, "hamming"));
+
+  //a_detector->quad_decimate = getopt_get_double(getopt, "decimate");
+  //a_detector->quad_sigma = getopt_get_double(getopt, "blur");
+  //a_detector->nthreads = getopt_get_int(getopt, "threads");
+  //a_detector->debug = getopt_get_bool(getopt, "debug");
+  //a_detector->refine_edges = getopt_get_bool(getopt, "refine-edges");
+
+  apriltag_detector_add_family(a_detector, tf);
+  
+
+  return;
 }
 
-void publishTransforms(vector<apriltag_pose_t> poses, vector<int> ids, std_msgs::Header header){
-  tf::Quaternion q;
-  tf::Matrix3x3 so3_mat;
-  tf::Transform tf;
-  static tf::TransformBroadcaster br;
-  geometry_msgs::PoseArray pose_array_msg;
-  pose_array_msg.header = header;
+AprilDetection::~AprilDetection(){
+  return;
+}
 
-  for (int i=0; i<poses.size(); i++){
+tuple<vector<apriltag_pose_t>, vector<int>, cv::Mat> AprilDetection::processImage(cv::Mat image){
 
-    // constrain the marker pose in 2d
-    tf.setOrigin(tf::Vector3(poses[i].t->data[0], 0, poses[i].t->data[2]));
+  cv::Mat image_gray; 
+  cv::cvtColor(image, image_gray, cv::COLOR_BGR2GRAY);
 
-    so3_mat.setValue(poses[i].R->data[0],0,-poses[i].R->data[6],
-		     0,1,0,
-		     poses[i].R->data[6],0,poses[i].R->data[0]);
+  image_u8_t im = { .width  = image_gray.cols,
+                    .height = image_gray.rows,
+                    .stride = image_gray.cols, 
+                    .buf    = image_gray.data 
+  };
 
 
-    /**********************************
-    // translation
-    tf.setOrigin(tf::Vector3(poses[i].t->data[0],
-                             poses[i].t->data[1],
-                             poses[i].t->data[2]));
-    // orientation - SO(3)
-    so3_mat.setValue(poses[i].R->data[0], poses[i].R->data[1], poses[i].R->data[2],
-                     poses[i].R->data[3], poses[i].R->data[4], poses[i].R->data[5], 
-                     poses[i].R->data[6], poses[i].R->data[7], poses[i].R->data[8]);
-    ************************************/
+  zarray_t * detections = apriltag_detector_detect(a_detector, &im);
 
-    double roll, pitch, yaw; 
+  apriltag_detection_t *det;
+  apriltag_detection_info_t tag_info; 
+  vector<apriltag_pose_t> poses;
+  vector<int> ids;
 
-    // orientation - q
-    so3_mat.getRPY(roll, pitch, yaw); // so3 to RPY
-    q.setRPY(roll, pitch, yaw);
+  tag_info.tagsize = 0.1655;
+  tag_info.fx = 679.342574; 
+  tag_info.fy = 679.697958;
+  tag_info.cx = 952.345137;
+  tag_info.cy = 535.054983;
 
-    tf.setRotation(q);
+  for (int i=0; i<zarray_size(detections); i++){
 
-    string marker_name = "marker_" + to_string(ids[i]);
-    string camera_name= "camera_" + to_string(ids[i]);
-    br.sendTransform(tf::StampedTransform(tf.inverse(), ros::Time::now(), marker_name, camera_name));
-    ROS_INFO("Transformation published for marker.");
-    
-    geometry_msgs::Pose pose;
-    pose.position.x = poses[i].t->data[0];
-    pose.position.y = poses[i].t->data[1];
-    pose.position.z = poses[i].t->data[2];
-    
-    tf::quaternionTFToMsg(q, pose.orientation);
-    pose_array_msg.poses.push_back(pose);
+    zarray_get(detections, i, &det);
+    tag_info.det = det;
+    apriltag_pose_t pose;
+
+    // estimate SE(3) pose 
+    estimate_tag_pose(&tag_info, &pose);
+    poses.push_back(pose);
+    ids.push_back(det->id);
+
   }
-
-  pose_pub.publish(pose_array_msg);
-}
-
-
-void imageCallback(const sensor_msgs::Image::ConstPtr& msg){
   
-  cv_bridge::CvImagePtr img_cv = cv_bridge::toCvCopy(msg);
-  std_msgs::Header header = msg->header;
+  return make_tuple(poses, ids, image);
 
-  // rectify and run detection (pair<vector<apriltag_pose_t>, cv::Mat>)
-  auto april_obj =  det.processImage(rectify(img_cv->image));
-
-  publishTransforms(get<0>(april_obj), get<1>(april_obj), header);
-
-}
-
-int main(int argc, char *argv[]){
-  ros::init(argc, argv, "april_detection");
-  ros::NodeHandle n;
-  ros::NodeHandle private_nh("~");
-
-  pose_pub = n.advertise<geometry_msgs::PoseArray>("/april_poses", 10); 
-  image_sub = n.subscribe("/camera_0", 1, imageCallback);
-  
-  ros::spin();
-  return 0;
-  
 }
