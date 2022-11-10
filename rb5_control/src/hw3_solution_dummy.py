@@ -76,6 +76,25 @@ class PIDcontroller:
 
         return result
 
+def rotationMatrixToEulerAngles(R) :
+ 
+    assert(isRotationMatrix(R))
+ 
+    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
+ 
+    singular = sy < 1e-6
+ 
+    if not singular :
+        x = math.atan2(R[2,1] , R[2,2])
+        y = math.atan2(-R[2,0], sy)
+        z = math.atan2(R[1,0], R[0,0])
+    else :
+        x = math.atan2(-R[1,2], R[1,1])
+        y = math.atan2(-R[2,0], sy)
+        z = 0
+    #print(np.array([x, y, z]))
+    return np.array([x, y, z])
+
 def getCurrentPos(l):
     """
     Given the tf listener, we consider the camera's z-axis is the header of the car
@@ -107,10 +126,12 @@ def getCurrentPos(l):
                 # print(trans, rot)
                 matrix = quaternion_matrix(rot)
                 angle = math.atan2(matrix[1][2], matrix[0][2])
+                eulerangles = rotationMatrixToEulerAngles(rot)
+                print("Euler Angles:", eulerangles)
                 print("Matrix, angle:",matrix, angle)
                 # this is not required, I just used this for debug in RVIZ
                 # br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0,0,angle), rospy.Time.now(), "base_link", "map")
-                result = np.array([trans[0], trans[1], angle])
+                result = np.array([trans[2], trans[0], angle])
                 foundSolution = True
                 # break
             except (tf.LookupException):
