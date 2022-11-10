@@ -143,7 +143,7 @@ def coord(twist, current_state):
 
 if __name__ == "__main__":
     import time
-    rospy.init_node("hw2")
+    rospy.init_node("hw2_sol_dummy_node")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
 
     listener = tf.TransformListener()
