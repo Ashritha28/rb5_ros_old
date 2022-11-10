@@ -112,7 +112,7 @@ def getCurrentPos(l):
                 # br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0,0,angle), rospy.Time.now(), "base_link", "map")
                 result = np.array([trans[0], trans[1], angle])
                 foundSolution = True
-                break
+                # break
             except (tf.LookupException):
                 print("Lookup error")
             except(tf.ConnectivityException):
