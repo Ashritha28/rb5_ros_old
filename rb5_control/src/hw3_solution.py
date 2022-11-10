@@ -86,19 +86,28 @@ class KalmanFilter:
         self.H = np.hstack((self.H, np.eye(3 * n, dtype =float)))
 
     def compute_rot_matrix(self):
-        n = len(self.zt)
         theta = self.s[self.robot_id][2]
         rot = np.array([[cos(theta), sin(theta), 0.0],
               [-sin(theta), cos(theta), 0.0],
               [0.0, 0.0, 1.0]])
 
     def compute_error(self):
+        n = len(self.zt)
         Hs = np.matmul(self.H, self.s)
         rot = self.compute_rot_matrix()
+<<<<<<< HEAD
+        Rot = np.zeros((n*3, n*3))
+        print(Rot.shape)
+        for i in range(n):
+            Rot[i*3:i*3+3, i*3:i*3+3] = rot
+        return self.zt - np.matmul(Rot,Hs)
+    
+=======
 
+>>>>>>> 01ae49b6a0d6b880dedb80a2206ea57e8fa76683
 
     def update_state(self):
-        self.s = self.s + np.matmul(self.K, self.zt - np.matmul(self.H, self.s))
+        self.s = self.s + np.matmul(self.K, self.compute_error)
 
     def update_sigma(self):
         KH = np.matmul(self.K, self.H)
@@ -106,13 +115,23 @@ class KalmanFilter:
         self.sigma = np.matmul((I - KH), self.sigma)
 
     def algo_run(self, prev_state, update_value):
+
+        new_measurements = getMeasurement(listener, self)
+        if new_measurements:
+            for i in range(len(new_measurements)):
+                self.restack_sigma()
+                self.restack_R()
+                self.restack_Q()
+                self.s[new_measurements[i].key] = new_measurements[i].value
+
         self.predict_state(prev_state, update_value)
         self.predict_sigma()
-        new_measurements = getMeasurement(listener, self)
+
         self.compute_H()
         self.compute_kalman_gain()
         self.update_state()
         self.update_sigma()
+        
 
 class PIDcontroller:
     def __init__(self, Kp, Ki, Kd):
@@ -278,15 +297,13 @@ if __name__ == "__main__":
         # print(coord(update_value, current_state))
         time.sleep(0.05)
         # Run Kalman Filter Algorithm
+        
         kf.algo_run(current_state, update_value)
-
-
-
         # update the current state
-        current_state += update_value
-        found_state, estimated_state = getCurrentPos(listener)
-        if found_state:  # if the tag is detected, we can use it to update current state.
-            current_state = estimated_state
+        current_state = kf.s[100]
+        # found_state, estimated_state = getCurrentPos(listener)
+        # if found_state:  # if the tag is detected, we can use it to update current state.
+        #     current_state = estimated_state
         while (np.linalg.norm(
                 pid.getError(current_state, wp)) > 0.05):  # check the error between current state and current way point
             # calculate the current twist
@@ -294,12 +311,16 @@ if __name__ == "__main__":
             # publish the twist
             pub_twist.publish(genTwistMsg(coord(update_value, current_state)))
             # print(coord(update_value, current_state))
-            time.sleep(0.05)
+            time.sleep(0.1)
+
+            kf.algo_run(current_state, update_value)
+            current_state = kf.s[100]
             # update the current state
-            current_state += update_value
-            found_state, estimated_state = getCurrentPos(listener)
-            if found_state:
-                current_state = estimated_state
+            # current_state += update_value
+            # found_state, estimated_state = getCurrentPos(listener)
+            # if found_state:
+            #     current_state = estimated_state
+
     # stop the car and exit
     pub_twist.publish(genTwistMsg(np.array([0.0, 0.0, 0.0])))
 
