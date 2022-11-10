@@ -120,23 +120,24 @@ class KalmanFilter:
 
     def compute_H(self):
         n = len(self.zt)
-        print("Number of measurements: ", n)
-        I_neg = -1 * np.eye(3, dtype=float)
-        left_matrix = I_neg
-        for i in range(n-1):
-            left_matrix = np.vstack((left_matrix, I_neg))
-        self.H = np.hstack((left_matrix, np.eye(3 * n, dtype=float)))
-        print("Just H shape: ", np.shape(self.H))
-        print("Just H: ", self.H)
-        rot = self.compute_rot_matrix()
-        Rot = np.zeros((n * 3, n * 3))
-        for i in range(n):
-            Rot[i * 3:i * 3 + 3, i * 3:i * 3 + 3] = rot
-        print("Rot matrix shape: ", np.shape(Rot))
-        print("Rot matrix: ", Rot)
-        self.H = np.matmul(Rot, self.H)
-        print("Final H matrix shape: ", np.shape(self.H))
-        print("Final H matrix: ", self.H)
+        if n > 0:
+            print("Number of measurements: ", n)
+            I_neg = -1 * np.eye(3, dtype=float)
+            left_matrix = I_neg
+            for i in range(n-1):
+                left_matrix = np.vstack((left_matrix, I_neg))
+            self.H = np.hstack((left_matrix, np.eye(3 * n, dtype=float)))
+            print("Just H shape: ", np.shape(self.H))
+            print("Just H: ", self.H)
+            rot = self.compute_rot_matrix()
+            Rot = np.zeros((n * 3, n * 3))
+            for i in range(n):
+                Rot[i * 3:i * 3 + 3, i * 3:i * 3 + 3] = rot
+            print("Rot matrix shape: ", np.shape(Rot))
+            print("Rot matrix: ", Rot)
+            self.H = np.matmul(Rot, self.H)
+            print("Final H matrix shape: ", np.shape(self.H))
+            print("Final H matrix: ", self.H)
 
     def compute_rot_matrix(self):
         theta = self.s[self.robot_id][2]
