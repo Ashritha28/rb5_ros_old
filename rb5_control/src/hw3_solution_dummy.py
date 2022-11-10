@@ -83,17 +83,18 @@ def getCurrentPos(l):
     br = tf.TransformBroadcaster()
     result = None
     foundSolution = False
-    print("HELLO")
+    # print("HELLO")
 
     for i in range(0, 9):
         camera_name = "camera_" + str(i)
         if l.frameExists(camera_name):
-            print("SUPPPPPP")
+            print("Frame Exists")
             try:
                 now = rospy.Time()
-                print("UMMMMMMM")
+                print("TRYYY")
                 # wait for the transform ready from the map to the camera for 1 second.
                 l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
+                print("Transform available")
                 # extract the transform camera pose in the map coordinate.
                 (trans, rot) = l.lookupTransform("map", camera_name, now)
                 # convert the rotate matrix to theta angle in 2d
@@ -106,8 +107,12 @@ def getCurrentPos(l):
                 result = np.array([trans[0], trans[1], angle])
                 foundSolution = True
                 break
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException):
-                print("meet error")
+            except (tf.LookupException):
+                print("Lookup error")
+            except(tf.ConnectivityException):
+                print("Connectivity Error")
+            except(tf.ExtrapolationException, tf2_ros.TransformException):
+                print("Extrapolation and Transform Exception")
     listener.clear()
     return foundSolution, result
 
@@ -184,6 +189,7 @@ if __name__ == "__main__":
             # update the current state
             current_state += update_value
             found_state, estimated_state = getCurrentPos(listener)
+            print(found_state, estimated_state)
             if found_state:
                 current_state = estimated_state
     # stop the car and exit

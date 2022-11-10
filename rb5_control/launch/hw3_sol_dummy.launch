@@ -1,5 +1,5 @@
 <launch>
   <!-- <include file="$(find rb5_control)/launch/mbot_bringup.launch" /> -->
-  <include file="$(find april_detection)/launch/april_detection_cam_main.launch" />
+  <!-- <include file="$(find april_detection)/launch/april_detection_cam_main.launch" /> -->
   <node pkg="rb5_control" type="hw3_solution_dummy.py" name="hw2_sol_dummy_node" output="screen" />
 </launch>
