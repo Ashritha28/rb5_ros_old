@@ -94,7 +94,7 @@ def getCurrentPos(l):
                 print("TRYYY")
                 # wait for the transform ready from the map to the camera for 1 second.
                 print(l.getFrameStrings())
-                l.waitForTransform("map", camera_name, now, rospy.Duration(0.1))
+                l.waitForTransform("map", camera_name, now, rospy.Duration(2))
                 print("Transform available")
                 # extract the transform camera pose in the map coordinate.
                 (trans, rot) = l.lookupTransform("map", camera_name, now)
