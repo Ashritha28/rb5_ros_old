@@ -93,7 +93,7 @@ def getCurrentPos(l):
                 now = rospy.Time()
                 print("TRYYY")
                 # wait for the transform ready from the map to the camera for 1 second.
-                l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
+                l.waitForTransform("map", camera_name, now, rospy.Duration(0.1))
                 print("Transform available")
                 # extract the transform camera pose in the map coordinate.
                 (trans, rot) = l.lookupTransform("map", camera_name, now)
@@ -143,7 +143,7 @@ def coord(twist, current_state):
 
 if __name__ == "__main__":
     import time
-    rospy.init_node("hw2_sol_dummy_node")
+    rospy.init_node("hw3")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
 
     listener = tf.TransformListener()

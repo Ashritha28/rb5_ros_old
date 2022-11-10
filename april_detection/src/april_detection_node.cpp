@@ -78,7 +78,7 @@ void publishTransforms(vector<apriltag_pose_t> poses, vector<int> ids, std_msgs:
     string camera_name = "camera_" + to_string(ids[i]);
     br.sendTransform(tf::StampedTransform(tf.inverse(), ros::Time::now(), marker_name, camera_name));
     // br.sendTransform(tf::StampedTransform(tf, ros::Time::now(), "camera", marker_name));
-    // ROS_INFO("Transformation published for marker.");
+    ROS_INFO("Transformation published for marker.");
 
     // Prepare PoseArray message
     geometry_msgs::Pose pose;
