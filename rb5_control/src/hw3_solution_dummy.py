@@ -133,7 +133,7 @@ def getCurrentPos(l):
                 # print(trans, rot)
                 matrix = quaternion_matrix(rot)
                 angle = math.atan2(matrix[1][2], matrix[0][2])
-                eulerangles = rotationMatrixToEulerAngles(matrix)
+                eulerangles = rotationMatrixToEulerAngles(matrix[0:3,0:3])
                 print("Euler Angles:", eulerangles)
                 print("Matrix, angle:",matrix, angle)
                 # this is not required, I just used this for debug in RVIZ
