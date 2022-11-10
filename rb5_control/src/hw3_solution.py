@@ -291,7 +291,7 @@ if __name__ == "__main__":
     import time
 
     br = tf.TransformBroadcaster()
-    rospy.init_node("hw2")
+    rospy.init_node("hw3")
     pub_twist = rospy.Publisher("/twist", Twist, queue_size=1)
 
     listener = tf.TransformListener()
