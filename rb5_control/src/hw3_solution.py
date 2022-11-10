@@ -154,7 +154,12 @@ class KalmanFilter:
 
     def update_state(self):
         print("State before update: ", self.s)
-        self.s = self.s + np.matmul(self.K, self.compute_error)
+        s_arr = np.array([])
+        for key in self.s:
+            s_arr.append(self.s[key])
+        s_arr = s_arr + np.matmul(self.K, self.compute_error)
+        for i in range(len(s_arr)):
+
         print("State after update: ", self.s)
 
     def update_sigma(self):
