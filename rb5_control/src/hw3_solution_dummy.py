@@ -98,11 +98,11 @@ def getCurrentPos(l):
                 # detections = filter(lambda i: 'camera_' in i, l.getFrameStrings())
                 # print(detections)
                 # l.waitForTransform("map", camera_name, now, rospy.Duration(2))
-                l.waitForTransform("marker_"+str(i), camera_name , now, rospy.Duration(1))
+                l.waitForTransform(camera_name, "marker_"+str(i) , now, rospy.Duration(1))
                 # print("Transform available")
                 # extract the transform camera pose in the map coordinate.
                 # (trans, rot) = l.lookupTransform("map", camera_name, now)
-                (trans, rot) = l.lookupTransform("marker_"+str(i), camera_name, now)
+                (trans, rot) = l.lookupTransform(camera_name, "marker_"+str(i) , now)
                 # convert the rotate matrix to theta angle in 2d
                 # print(trans, rot)
                 matrix = quaternion_matrix(rot)
