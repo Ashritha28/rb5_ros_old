@@ -132,8 +132,12 @@ def getCurrentPos(l):
                 # convert the rotate matrix to theta angle in 2d
                 # print(trans, rot)
                 matrix = quaternion_matrix(rot)
-                angle = math.atan2(matrix[1][2], matrix[0][2])
+                # angle = math.atan2(matrix[1][2], matrix[0][2])
                 eulerangles = rotationMatrixToEulerAngles(matrix[0:3,0:3])
+                angle = eulerangles[2]
+                aTc = np.append(np.append(matrix, trans,axis=1), [[0,0,0,1]], axis=0)
+                cTa = np.linalg.inv(aTc)
+                print(cTa)
                 print("Euler Angles:", eulerangles)
                 print("Matrix, angle:",matrix, angle)
                 # this is not required, I just used this for debug in RVIZ
