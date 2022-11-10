@@ -98,7 +98,7 @@ def getCurrentPos(l):
                 detections = filter(lambda i: 'camera_' in i, l.getFrameStrings())
                 print(detections)
                 # l.waitForTransform("map", camera_name, now, rospy.Duration(2))
-                l.waitForTransform(detections[0], "marker_8", now)
+                l.waitForTransform(detections[0], "marker_8", now, rospy.Duration(2))
                 print("Transform available")
                 # extract the transform camera pose in the map coordinate.
                 # (trans, rot) = l.lookupTransform("map", camera_name, now)
