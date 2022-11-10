@@ -88,25 +88,31 @@ def getCurrentPos(l):
     for i in range(0, 9):
         camera_name = "camera_" + str(i)
         if l.frameExists(camera_name):
-            print("Frame Exists")
+            # print("Frame Exists")
             try:
                 now = rospy.Time()
-                print("TRYYY")
+                # print("TRYYY")
                 # wait for the transform ready from the map to the camera for 1 second.
-                l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
-                print("Transform available")
+                print(l.getFrameStrings())
+                print(camera_name)
+                # detections = filter(lambda i: 'camera_' in i, l.getFrameStrings())
+                # print(detections)
+                # l.waitForTransform("map", camera_name, now, rospy.Duration(2))
+                l.waitForTransform(camera_name, "marker_"+str(i), now, rospy.Duration(1))
+                # print("Transform available")
                 # extract the transform camera pose in the map coordinate.
-                (trans, rot) = l.lookupTransform("map", camera_name, now)
+                # (trans, rot) = l.lookupTransform("map", camera_name, now)
+                (trans, rot) = l.lookupTransform(camera_name, "marker_"+str(i), now)
                 # convert the rotate matrix to theta angle in 2d
-                print(trans, rot)
+                # print(trans, rot)
                 matrix = quaternion_matrix(rot)
                 angle = math.atan2(matrix[1][2], matrix[0][2])
                 print("Matrix, angle:",matrix, angle)
                 # this is not required, I just used this for debug in RVIZ
-                br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0,0,angle), rospy.Time.now(), "base_link", "map")
+                # br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0,0,angle), rospy.Time.now(), "base_link", "map")
                 result = np.array([trans[0], trans[1], angle])
                 foundSolution = True
-                break
+                # break
             except (tf.LookupException):
                 print("Lookup error")
             except(tf.ConnectivityException):
