@@ -139,7 +139,7 @@ class KalmanFilter:
 
     def algo_run(self, prev_state, update_value):
         print("Taking measurements before prediction")
-        new_measurements = getMeasurement(listener, self)
+        new_measurements = getMeasurement(self.listener, self, self.br)
         if new_measurements:
             for i in range(len(new_measurements)):
                 self.restack_sigma()
