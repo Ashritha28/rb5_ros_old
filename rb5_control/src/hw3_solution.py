@@ -213,11 +213,13 @@ def getMeasurement(l, kf):
                 (trans, rot) = l.lookupTransform("map", camera_name, now)
                 # convert the rotate matrix to theta angle in 2d
                 matrix = quaternion_matrix(rot)
-                angle = math.atan2(matrix[1][2], matrix[0][2])
+                # angle = math.atan2(matrix[1][2], matrix[0][2])
+                eulerangles = rotationMatrixToEulerAngles(matrix[0:3,0:3])
+                angle = eulerangles[1]
                 # this is not required, I just used this for debug in RVIZ
                 br.sendTransform((trans[0], trans[1], 0), tf.transformations.quaternion_from_euler(0, 0, angle),
                                  rospy.Time.now(), "base_link", "map")
-                result = np.array([trans[0], trans[1], angle])
+                result = np.array([trans[2], trans[0], angle])
                 if i in kf.seen_ids:
                     # Update zt
                     kf.zt[i] = result #Assuming here we get everything in world co-ordinates
