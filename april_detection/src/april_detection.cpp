@@ -59,7 +59,7 @@ tuple<vector<apriltag_pose_t>, vector<int>, cv::Mat> AprilDetection::processImag
     ids.push_back(det->id);
 
   }
-  
+
   return make_tuple(poses, ids, image);
 
 }

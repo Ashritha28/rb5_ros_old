@@ -17,7 +17,6 @@ The class of the pid controller.
 """
 
 ##### TODO
-# Figure out how to get H matrix
 # When should I take measurement?
 # When I get tag in robot frame, how to convert to WC?
 # Write uncertainity (sigma) after every timestep into a file
@@ -96,12 +95,16 @@ class KalmanFilter:
         n = len(self.zt)
         Hs = np.matmul(self.H, self.s)
         rot = self.compute_rot_matrix()
+<<<<<<< HEAD
         Rot = np.zeros((n*3, n*3))
         print(Rot.shape)
         for i in range(n):
             Rot[i*3:i*3+3, i*3:i*3+3] = rot
         return self.zt - np.matmul(Rot,Hs)
     
+=======
+
+>>>>>>> 01ae49b6a0d6b880dedb80a2206ea57e8fa76683
 
     def update_state(self):
         self.s = self.s + np.matmul(self.K, self.compute_error)
