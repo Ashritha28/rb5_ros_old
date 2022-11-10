@@ -135,7 +135,8 @@ def getCurrentPos(l):
                 # angle = math.atan2(matrix[1][2], matrix[0][2])
                 eulerangles = rotationMatrixToEulerAngles(matrix[0:3,0:3])
                 angle = eulerangles[2]
-                print(matrix.shape, trans.shape)
+                print("Matrix:",matrix.shape)
+                print("Trans:",trans)
                 aTc = np.append(np.append(matrix[0:3,0:3], trans,axis=1), [[0,0,0,1]], axis=0)
                 cTa = np.linalg.inv(aTc)
                 print(cTa)
