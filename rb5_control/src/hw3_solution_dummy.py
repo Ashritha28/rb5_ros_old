@@ -75,13 +75,14 @@ class PIDcontroller:
             self.I = 0.0
 
         return result
+
 def isRotationMatrix(R) :
     Rt = np.transpose(R)
     shouldBeIdentity = np.dot(Rt, R)
     I = np.identity(3, dtype = R.dtype)
     n = np.linalg.norm(I - shouldBeIdentity)
     return n < 1e-6
-    
+
 def rotationMatrixToEulerAngles(R) :
  
     assert(isRotationMatrix(R))
@@ -132,7 +133,7 @@ def getCurrentPos(l):
                 # print(trans, rot)
                 matrix = quaternion_matrix(rot)
                 angle = math.atan2(matrix[1][2], matrix[0][2])
-                eulerangles = rotationMatrixToEulerAngles(rot)
+                eulerangles = rotationMatrixToEulerAngles(matrix)
                 print("Euler Angles:", eulerangles)
                 print("Matrix, angle:",matrix, angle)
                 # this is not required, I just used this for debug in RVIZ
