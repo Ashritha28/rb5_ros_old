@@ -22,6 +22,31 @@ The class of the pid controller.
 # Write uncertainity (sigma) after every timestep into a file
 # Modify PID controller
 
+def isRotationMatrix(R) :
+    Rt = np.transpose(R)
+    shouldBeIdentity = np.dot(Rt, R)
+    I = np.identity(3, dtype = R.dtype)
+    n = np.linalg.norm(I - shouldBeIdentity)
+    return n < 1e-6
+
+def rotationMatrixToEulerAngles(R):
+    assert (isRotationMatrix(R))
+
+    sy = math.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
+
+    singular = sy < 1e-6
+
+    if not singular:
+        x = math.atan2(R[2, 1], R[2, 2])
+        y = math.atan2(-R[2, 0], sy)
+        z = math.atan2(R[1, 0], R[0, 0])
+    else:
+        x = math.atan2(-R[1, 2], R[1, 1])
+        y = math.atan2(-R[2, 0], sy)
+        z = 0
+    # print(np.array([x, y, z]))
+    return np.array([x, y, z])
+
 class KalmanFilter:
     def __init__(self, listener, br):
         self.br = br
@@ -96,10 +121,11 @@ class KalmanFilter:
     def compute_H(self):
         n = len(self.zt)
         print("Number of measurements: ", n)
-        self.H = np.array([])
-        for i in range(n):
-            self.H = np.vstack((self.H, -1 * np.eye(3, dtype = float)))
-        self.H = np.hstack((self.H, np.eye(3 * n, dtype =float)))
+        I_neg = -1 * np.eye(3, dtype=float)
+        left_matrix = I_neg
+        for i in range(n-1):
+            left_matrix = np.vstack((left_matrix, I_neg))
+        self.H = np.hstack((left_matrix, np.eye(3 * n, dtype=float)))
         print("Just H shape: ", np.shape(self.H))
         print("Just H: ", self.H)
         rot = self.compute_rot_matrix()
@@ -231,8 +257,10 @@ def getMeasurement(l, kf, br):
     for i in range(0, 9):
         camera_name = "camera_" + str(i)
         if l.frameExists(camera_name):
+            print("Frame exists")
             try:
                 now = rospy.Time()
+                print(camera_name)
                 # wait for the transform ready from the map to the camera for 1 second.
                 #l.waitForTransform("map", camera_name, now, rospy.Duration(1.0))
                 l.waitForTransform(camera_name, "marker_" + str(i), now, rospy.Duration(1))
